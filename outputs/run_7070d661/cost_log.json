@@ -1,0 +1,232 @@
+[
+  {
+    "task_id": "l0_profile_r1",
+    "model": "claude-sonnet-4-5-20250929",
+    "input_tokens": 183435,
+    "output_tokens": 12069,
+    "thinking_tokens": 0,
+    "search_count": 8,
+    "estimated_cost_usd": 0.8113,
+    "timestamp": "2026-02-25T19:03:44.576438"
+  },
+  {
+    "task_id": "l0_profile_r2",
+    "model": "claude-sonnet-4-5-20250929",
+    "input_tokens": 203911,
+    "output_tokens": 16266,
+    "thinking_tokens": 0,
+    "search_count": 2,
+    "estimated_cost_usd": 0.8757,
+    "timestamp": "2026-02-25T19:10:47.684025"
+  },
+  {
+    "task_id": "l05_design",
+    "model": "claude-opus-4-6",
+    "input_tokens": 24795,
+    "output_tokens": 24074,
+    "thinking_tokens": 0,
+    "search_count": 0,
+    "estimated_cost_usd": 2.1775,
+    "timestamp": "2026-02-25T20:00:00.061646"
+  },
+  {
+    "task_id": "l1_agent_05_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 173500,
+    "output_tokens": 15652,
+    "thinking_tokens": 0,
+    "search_count": 7,
+    "estimated_cost_usd": 0.8253,
+    "timestamp": "2026-02-27T08:02:46.245996"
+  },
+  {
+    "task_id": "l1_agent_03_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 188929,
+    "output_tokens": 16492,
+    "thinking_tokens": 0,
+    "search_count": 7,
+    "estimated_cost_usd": 0.8842,
+    "timestamp": "2026-02-27T08:02:50.107360"
+  },
+  {
+    "task_id": "l1_agent_01_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 409847,
+    "output_tokens": 14845,
+    "thinking_tokens": 0,
+    "search_count": 12,
+    "estimated_cost_usd": 1.5722,
+    "timestamp": "2026-02-27T10:14:01.406641"
+  },
+  {
+    "task_id": "l1_agent_02_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 452177,
+    "output_tokens": 11376,
+    "thinking_tokens": 0,
+    "search_count": 12,
+    "estimated_cost_usd": 1.6472,
+    "timestamp": "2026-02-27T10:18:49.171747"
+  },
+  {
+    "task_id": "l1_agent_03_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 351500,
+    "output_tokens": 16798,
+    "thinking_tokens": 0,
+    "search_count": 10,
+    "estimated_cost_usd": 1.4065,
+    "timestamp": "2026-02-27T10:25:47.492548"
+  },
+  {
+    "task_id": "l1_agent_04_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 346244,
+    "output_tokens": 10565,
+    "thinking_tokens": 0,
+    "search_count": 10,
+    "estimated_cost_usd": 1.2972,
+    "timestamp": "2026-02-27T10:30:19.828546"
+  },
+  {
+    "task_id": "l1_agent_05_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 434821,
+    "output_tokens": 15044,
+    "thinking_tokens": 0,
+    "search_count": 12,
+    "estimated_cost_usd": 1.6501,
+    "timestamp": "2026-02-27T10:39:45.127745"
+  },
+  {
+    "task_id": "l1_agent_07_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 333113,
+    "output_tokens": 13921,
+    "thinking_tokens": 0,
+    "search_count": 11,
+    "estimated_cost_usd": 1.3182,
+    "timestamp": "2026-02-27T11:11:02.391255"
+  },
+  {
+    "task_id": "l1_agent_09_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 260125,
+    "output_tokens": 16674,
+    "thinking_tokens": 0,
+    "search_count": 10,
+    "estimated_cost_usd": 1.1305,
+    "timestamp": "2026-02-27T11:38:07.056987"
+  },
+  {
+    "task_id": "l1_agent_10_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 264220,
+    "output_tokens": 13496,
+    "thinking_tokens": 0,
+    "search_count": 10,
+    "estimated_cost_usd": 1.0951,
+    "timestamp": "2026-02-27T11:43:56.464695"
+  },
+  {
+    "task_id": "l1_agent_06_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 495410,
+    "output_tokens": 16823,
+    "thinking_tokens": 0,
+    "search_count": 12,
+    "estimated_cost_usd": 1.8586,
+    "timestamp": "2026-02-27T18:38:38.428590"
+  },
+  {
+    "task_id": "l1_agent_08_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 361197,
+    "output_tokens": 17185,
+    "thinking_tokens": 0,
+    "search_count": 14,
+    "estimated_cost_usd": 1.4814,
+    "timestamp": "2026-02-27T18:45:44.008915"
+  },
+  {
+    "task_id": "l15_consolidation",
+    "model": "claude-opus-4-6",
+    "input_tokens": 69443,
+    "output_tokens": 16544,
+    "thinking_tokens": 0,
+    "search_count": 0,
+    "estimated_cost_usd": 2.2824,
+    "timestamp": "2026-02-27T19:23:51.804211"
+  },
+  {
+    "task_id": "l2_generation",
+    "model": "claude-opus-4-6",
+    "input_tokens": 14281,
+    "output_tokens": 17564,
+    "thinking_tokens": 0,
+    "search_count": 0,
+    "estimated_cost_usd": 1.5315,
+    "timestamp": "2026-02-27T19:54:30.754800"
+  },
+  {
+    "task_id": "l3_synthesis",
+    "model": "claude-opus-4-6",
+    "input_tokens": 112492,
+    "output_tokens": 23388,
+    "thinking_tokens": 0,
+    "search_count": 0,
+    "estimated_cost_usd": 3.4415,
+    "timestamp": "2026-02-27T20:57:20.129223"
+  },
+  {
+    "task_id": "contrarian_l2_generation",
+    "model": "claude-opus-4-6",
+    "input_tokens": 17064,
+    "output_tokens": 9963,
+    "thinking_tokens": 0,
+    "search_count": 0,
+    "estimated_cost_usd": 1.0032,
+    "timestamp": "2026-02-27T21:35:16.541230"
+  },
+  {
+    "task_id": "l2_contrarian_01_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 364965,
+    "output_tokens": 9173,
+    "thinking_tokens": 0,
+    "search_count": 11,
+    "estimated_cost_usd": 1.3425,
+    "timestamp": "2026-02-27T21:39:04.129874"
+  },
+  {
+    "task_id": "l2_contrarian_02_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 284034,
+    "output_tokens": 12534,
+    "thinking_tokens": 0,
+    "search_count": 12,
+    "estimated_cost_usd": 1.1601,
+    "timestamp": "2026-02-27T21:44:11.885622"
+  },
+  {
+    "task_id": "l2_contrarian_03_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 449777,
+    "output_tokens": 11578,
+    "thinking_tokens": 0,
+    "search_count": 11,
+    "estimated_cost_usd": 1.633,
+    "timestamp": "2026-02-27T21:49:16.778326"
+  },
+  {
+    "task_id": "l3_synthesis_v2",
+    "model": "claude-opus-4-6",
+    "input_tokens": 140057,
+    "output_tokens": 18788,
+    "thinking_tokens": 0,
+    "search_count": 0,
+    "estimated_cost_usd": 3.51,
+    "timestamp": "2026-02-27T21:57:23.308443"
+  }
+]

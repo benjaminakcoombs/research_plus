@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "deep-research"
+version = "0.1.0"
+description = "Multi-layered AI deep research system for strategic company analysis"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=0.40.0",
+    "pydantic>=2.0",
+    "tiktoken>=0.5.0",
+    "rich>=13.0",
+]
+
+[project.optional-dependencies]
+pdf = ["weasyprint"]
+dev = ["pytest", "pytest-asyncio"]
+
+[project.scripts]
+deep-research = "deep_research.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["deep_research*"]

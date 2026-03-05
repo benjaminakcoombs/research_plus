@@ -1,0 +1,5 @@
+- "JPMorgan's commercial lending team conducts deep credit analysis on thousands of mid-market companies annually. This proprietary industry intelligence — sector trends, default patterns, operational benchmarks — could be productized as a research/advisory service for PE firms and strategic acquirers who currently pay $X/year for inferior third-party data."
+
+- "Insurance companies' claims adjusters develop deep expertise in specific damage types (water, fire, auto). This knowledge could be licensed to property management companies, auto dealerships, and contractors as certification/training programs — turning a cost center into a credentialing business."
+
+- "A regional bank's mortgage processing team handles 5,000+ applications/year, building expertise in local property valuation, zoning, and regulatory compliance. They should offer white-label mortgage processing services to credit unions and community banks that can't maintain this expertise at scale — a model proven by firms like Computershare Mortgage Services."

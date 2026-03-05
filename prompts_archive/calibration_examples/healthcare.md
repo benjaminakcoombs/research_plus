@@ -1,0 +1,5 @@
+- "Hospital systems operate massive laundry facilities processing 15-20 lbs of linens per patient per day. Most run below capacity on weekends and overnight. They should offer commercial laundry services to nearby hotels, restaurants, and smaller clinics — facilities that already meet healthcare-grade sanitation standards."
+
+- "Pharma companies' failed drug candidates often have validated biological activity in non-target indications. A systematic 'drug repurposing' program could extract value from R&D investments currently sitting as write-offs. Drugs.com lists 70+ drugs that were repurposed from failed original indications — including Viagra (originally a heart medication)."
+
+- "A hospital network's fleet of 200+ patient transport vehicles sits idle from 10 PM to 6 AM. Overnight, these vehicles could provide contract medical courier services (lab specimens, blood products, medical records) to independent clinics and physician offices — a service currently filled by expensive specialized couriers."
