@@ -60,12 +60,12 @@ State your three chosen findings. For each:
 3. **The core insight in 2-3 sentences**: What the reader will learn
 4. **Evidence mix**: What's DOCUMENTED vs. CIRCUMSTANTIAL, and how the writer should signal the inferential pieces
 5. **Deal implication in 1 sentence**: The "so what" for a banker
-6. **Key open questions**: 2-3 unresolved questions this finding surfaces (the writer will develop these)
+6. **Key open questions**: 1-2 unresolved questions that collapse the finding into a single point of maximum leverage. Each should be the question a senior MD would ask after reading the finding — the one that makes the room go quiet. The writer will sharpen these into final form.
 
 Also state:
 - **What you cut and why**: Name the top 2-3 candidates that didn't make the cut and explain the trade-off. This helps the writer understand what's been deliberately excluded vs. what was simply lower-priority.
 - **Cross-references**: Note where the three selected findings interact with each other (e.g., "Finding 1's outcome constrains Finding 3's valuation range"). The writer should weave these connections into the document.
-- **Opportunity hook guidance**: In 1-2 sentences, suggest what market event, transaction, or shift should open Section I (The Opportunity). This should be something the reader already knows about — not a company description. The writer will develop it, but your editorial direction ensures the hook aligns with the finding selection.
+- **Opportunity hook guidance**: In 1-2 sentences, suggest what market event, transaction, or shift should open Section I (The Opportunity). This should be something the reader already knows about — not a company description. Prefer a narrative reversal (invested → collapsed → replacement exists) over a comp-table benchmark (X paid $Y for Z) where the research supports one. A story with a reversal earns the second paragraph; a benchmark just sets context. The writer will develop it, but your editorial direction ensures the hook aligns with the finding selection.
 
 ---
 

@@ -9,7 +9,7 @@ You have two inputs:
 
 ---
 
-## YOUR FIVE CHECKS
+## YOUR SIX CHECKS
 
 Work through these systematically. For each issue found, fix it directly in the output document. Do not produce a list of issues — produce the corrected document.
 
@@ -25,16 +25,23 @@ Common patterns:
 
 **Fix:** Reconcile to whichever version is better supported by the research corpus. If both are supportable, make the language consistent. If the contradiction is genuinely unresolved in the data, acknowledge it explicitly rather than asserting both sides.
 
-### 2. BODY TEXT vs. OPEN QUESTIONS CONSISTENCY
+### 2. CROSS-DOCUMENT LOGICAL CONSISTENCY
 
-For each finding, read the Observation and Deal Implication paragraphs, then read the Open Questions. Ask: does the body text state as fact anything that the Open Questions frame as unknown or unresolved?
+Read all three findings' Open Questions as a set. Then re-read the entire document — Sections I through IV — checking whether any sentence treats as established fact something that an Open Question identifies as unresolved.
 
-Common patterns:
-- Body says "contractual provisions remain legally in force" → Open Questions ask "does the agreement contain an explicit non-compete?" (The body asserts scope the questions admit is unknown.)
-- Body says "the product meets smelter-grade specification" → Open Questions ask "has the company achieved full SGA specification?" (The body assumes what the questions frame as unresolved.)
-- Body says an entity "cannot" do something → Open Questions ask whether the constraint actually exists
+This check operates *across* sections, not just within a single finding. The most common failure mode: Finding 1's Open Question challenges an assumption that Finding 3's Deal Implication depends on.
 
-**Fix:** Soften the body text to be consistent with the Open Questions. Use language like "contractual provisions — the precise scope of which has not been publicly disclosed — remain in force" rather than asserting specific terms. The body should never claim more certainty than the Open Questions grant.
+**This IS a contradiction (fix it):**
+- Finding 1 asks "Has anyone independently assayed the alumina?" → Finding 3's Deal Implication says "Brimstone's smelter-grade alumina supply" as if grade is established
+- Finding 2 asks "Does the non-compete cover C150-compliant cement?" → Section I says "CRH cannot pursue Brimstone due to the non-compete" as if scope is established
+- The Opportunity says "the board has two members" → A buyer entry references "the investor's board seat"
+
+**This is NOT a contradiction (leave it alone):**
+- Finding 1 asks about alumina grade → Finding 3's Observation says "if the alumina qualifies as smelter-grade" (conditional framing = already consistent)
+- A finding's body states what public data shows → its own Open Question asks about non-public data (documented absence vs. question about existence = complementary)
+- The Deal Implication states a dollar range → the Open Question asks what would change that range (conclusion + sensitivity = intended)
+
+**Fix:** Adjust whichever sentence is less supported by evidence. Usually this means adding a conditional ("if confirmed as smelter-grade") to a downstream finding that depends on an assumption another finding's question challenges. Do NOT soften well-sourced claims. Do NOT reduce assertiveness. Only resolve genuine logical incompatibilities.
 
 ### 3. UNSOURCED FACTUAL CLAIMS
 
@@ -75,10 +82,29 @@ Common patterns:
 
 **Fix:** If the source doesn't directly support the claim, either find the correct source in the research corpus, move the claim to a Calculation Note with the inference chain shown, or soften the claim to match what the source actually says.
 
+### 6. READER VERIFIABILITY
+
+Read every factual claim, derived number, and analytical conclusion in the document. For each, the reader must have a clear path to verify or understand it through exactly one of:
+
+- **A Source Note** (Arabic numeral) — a third party said this, here's where
+- **A Calculation Note** (Roman numeral) — we derived this, here's the math
+- **An Open Question or conditional framing** — we're transparent that this is unresolved
+- **Self-evident from cited facts in the same paragraph** — the conclusion follows directly from numbers already sourced in the preceding sentences
+
+If a claim has none of these, the reader hits a dead end. Common failures:
+
+- A percentage or ratio appears in the body with no footnote and no visible calculation (e.g., "projected at 44% of Plant 1 revenue" — where does 44% come from? The reader cannot reconstruct it.)
+- A characterization like "the market doesn't know this" or "no acquirer has tested this" without the negative-claim sourcing that shows what was searched
+- A deal implication states a dollar range but the inputs aren't traceable — the reader can't get from the body text to the number even with the Calculation Notes
+- A comparative claim ("half the cost," "2-3x enterprise value difference") where the two things being compared aren't both sourced or calculated in the same place
+
+**Fix:** Add the missing footnote, or add a brief parenthetical in the body that makes the derivation visible (e.g., "projected at 44% of Plant 1 revenue (20,000 t at ~$450/t of ~$21.8M total^i)"), or move an unsupported comparative into a Calculation Note with both sides shown. The goal is zero dead ends — every claim the reader might question has an answer within arm's reach.
+
 ---
 
 ## WHAT YOU ARE NOT DOING
 
+- Do NOT soften body text to reduce assertiveness or confidence. If a claim is supported by cited evidence, it stays as written regardless of whether an Open Question probes a related dimension. Confidence calibration is L3b's job, not yours. Your job is logical consistency, not editorial judgment.
 - Do NOT rewrite sections for style, narrative quality, or tone. That was L3b's job.
 - Do NOT change finding selection, add findings, or restructure the document.
 - Do NOT add new analysis, new buyer universe entries, or new precedent transactions.
@@ -94,7 +120,7 @@ Your changes should be surgical: a word here, a citation there, a number correct
 
 Produce the complete, corrected Deep Analysis document. Same structure, same sections, same formatting. The only differences from the L3b input should be the specific corrections you made.
 
-If the document passes all five checks with no issues found, output it unchanged.
+If the document passes all six checks with no issues found, output it unchanged.
 
 At the very end of your output, after the Source Notes, add a brief section:
 
@@ -103,7 +129,7 @@ At the very end of your output, after the Source Notes, add a brief section:
 List each correction made, in the format:
 - **[Check #]** Section → What was changed and why
 
-If no corrections were needed: "No corrections required. Document passed all five checks."
+If no corrections were needed: "No corrections required. Document passed all six checks."
 
 This log is for internal quality tracking and will be stripped before PDF generation.
 

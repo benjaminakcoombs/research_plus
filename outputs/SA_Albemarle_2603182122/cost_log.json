@@ -218,5 +218,455 @@
     "search_count": 3,
     "estimated_cost_usd": 0.6247,
     "timestamp": "2026-03-18T23:07:48.440488"
+  },
+  {
+    "task_id": "l1_agent_03_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 407428,
+    "output_tokens": 15321,
+    "thinking_tokens": 0,
+    "search_count": 13,
+    "estimated_cost_usd": 1.5821,
+    "timestamp": "2026-03-18T21:57:28.208287"
+  },
+  {
+    "task_id": "l1_agent_03_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 123547,
+    "output_tokens": 14631,
+    "thinking_tokens": 0,
+    "search_count": 4,
+    "estimated_cost_usd": 0.6301,
+    "timestamp": "2026-03-18T22:03:00.029673"
+  },
+  {
+    "task_id": "l1_agent_03_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 93058,
+    "output_tokens": 13716,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.5149,
+    "timestamp": "2026-03-18T22:08:18.368151"
+  },
+  {
+    "task_id": "l1_agent_03_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 414996,
+    "output_tokens": 16298,
+    "thinking_tokens": 0,
+    "search_count": 13,
+    "estimated_cost_usd": 1.6195,
+    "timestamp": "2026-03-18T22:37:52.305067"
+  },
+  {
+    "task_id": "l1_agent_03_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 128400,
+    "output_tokens": 14983,
+    "thinking_tokens": 0,
+    "search_count": 5,
+    "estimated_cost_usd": 0.6599,
+    "timestamp": "2026-03-18T22:43:32.850781"
+  },
+  {
+    "task_id": "l1_agent_03_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 177162,
+    "output_tokens": 15783,
+    "thinking_tokens": 0,
+    "search_count": 4,
+    "estimated_cost_usd": 0.8082,
+    "timestamp": "2026-03-18T22:49:26.811123"
+  },
+  {
+    "task_id": "l1_agent_03_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 408971,
+    "output_tokens": 17176,
+    "thinking_tokens": 0,
+    "search_count": 13,
+    "estimated_cost_usd": 1.6146,
+    "timestamp": "2026-03-18T23:11:23.228181"
+  },
+  {
+    "task_id": "l1_agent_03_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 150910,
+    "output_tokens": 15773,
+    "thinking_tokens": 0,
+    "search_count": 5,
+    "estimated_cost_usd": 0.7393,
+    "timestamp": "2026-03-18T23:17:29.174635"
+  },
+  {
+    "task_id": "l1_agent_03_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 100519,
+    "output_tokens": 16737,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.5826,
+    "timestamp": "2026-03-18T23:24:02.262788"
+  },
+  {
+    "task_id": "l1_agent_07_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 374210,
+    "output_tokens": 14883,
+    "thinking_tokens": 0,
+    "search_count": 12,
+    "estimated_cost_usd": 1.4659,
+    "timestamp": "2026-03-18T22:20:32.676222"
+  },
+  {
+    "task_id": "l1_agent_07_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 147437,
+    "output_tokens": 16378,
+    "thinking_tokens": 0,
+    "search_count": 5,
+    "estimated_cost_usd": 0.738,
+    "timestamp": "2026-03-18T22:26:58.789527"
+  },
+  {
+    "task_id": "l1_agent_07_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 175494,
+    "output_tokens": 16242,
+    "thinking_tokens": 0,
+    "search_count": 5,
+    "estimated_cost_usd": 0.8201,
+    "timestamp": "2026-03-18T22:32:49.898571"
+  },
+  {
+    "task_id": "l1_agent_07_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 296665,
+    "output_tokens": 11822,
+    "thinking_tokens": 0,
+    "search_count": 10,
+    "estimated_cost_usd": 1.1673,
+    "timestamp": "2026-03-18T22:55:35.603622"
+  },
+  {
+    "task_id": "l1_agent_07_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 112254,
+    "output_tokens": 12129,
+    "thinking_tokens": 0,
+    "search_count": 5,
+    "estimated_cost_usd": 0.5687,
+    "timestamp": "2026-03-18T22:59:51.607415"
+  },
+  {
+    "task_id": "l1_agent_07_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 151995,
+    "output_tokens": 13858,
+    "thinking_tokens": 0,
+    "search_count": 5,
+    "estimated_cost_usd": 0.7139,
+    "timestamp": "2026-03-18T23:04:53.699898"
+  },
+  {
+    "task_id": "l1_agent_07_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 208432,
+    "output_tokens": 14300,
+    "thinking_tokens": 0,
+    "search_count": 9,
+    "estimated_cost_usd": 0.9298,
+    "timestamp": "2026-03-18T23:14:21.802498"
+  },
+  {
+    "task_id": "l1_agent_07_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 135695,
+    "output_tokens": 14404,
+    "thinking_tokens": 0,
+    "search_count": 6,
+    "estimated_cost_usd": 0.6831,
+    "timestamp": "2026-03-18T23:19:37.059560"
+  },
+  {
+    "task_id": "l1_agent_07_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 159074,
+    "output_tokens": 16234,
+    "thinking_tokens": 0,
+    "search_count": 4,
+    "estimated_cost_usd": 0.7607,
+    "timestamp": "2026-03-18T23:25:34.147667"
+  },
+  {
+    "task_id": "l1_agent_01_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 324179,
+    "output_tokens": 20666,
+    "thinking_tokens": 0,
+    "search_count": 11,
+    "estimated_cost_usd": 1.3925,
+    "timestamp": "2026-03-18T21:59:23.840325"
+  },
+  {
+    "task_id": "l1_agent_01_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 76968,
+    "output_tokens": 22139,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.593,
+    "timestamp": "2026-03-18T22:07:59.310481"
+  },
+  {
+    "task_id": "l1_agent_01_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 122231,
+    "output_tokens": 23546,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.7499,
+    "timestamp": "2026-03-18T22:16:55.316968"
+  },
+  {
+    "task_id": "l1_agent_01_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 349107,
+    "output_tokens": 19154,
+    "thinking_tokens": 0,
+    "search_count": 11,
+    "estimated_cost_usd": 1.4446,
+    "timestamp": "2026-03-18T22:40:10.605278"
+  },
+  {
+    "task_id": "l1_agent_01_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 76896,
+    "output_tokens": 14962,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.4851,
+    "timestamp": "2026-03-18T22:45:40.043400"
+  },
+  {
+    "task_id": "l1_agent_01_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 105300,
+    "output_tokens": 18064,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.6169,
+    "timestamp": "2026-03-18T22:52:29.500179"
+  },
+  {
+    "task_id": "l1_agent_01_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 453427,
+    "output_tokens": 18931,
+    "thinking_tokens": 0,
+    "search_count": 13,
+    "estimated_cost_usd": 1.7742,
+    "timestamp": "2026-03-18T23:15:15.392075"
+  },
+  {
+    "task_id": "l1_agent_01_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 68003,
+    "output_tokens": 17803,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.5011,
+    "timestamp": "2026-03-18T23:22:19.334558"
+  },
+  {
+    "task_id": "l1_agent_01_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 109750,
+    "output_tokens": 17988,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.6291,
+    "timestamp": "2026-03-18T23:29:05.297893"
+  },
+  {
+    "task_id": "l1_agent_06_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 502428,
+    "output_tokens": 19363,
+    "thinking_tokens": 0,
+    "search_count": 13,
+    "estimated_cost_usd": 1.9277,
+    "timestamp": "2026-03-18T22:15:38.496992"
+  },
+  {
+    "task_id": "l1_agent_06_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 76832,
+    "output_tokens": 17983,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.5302,
+    "timestamp": "2026-03-18T22:22:19.918923"
+  },
+  {
+    "task_id": "l1_agent_06_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 112654,
+    "output_tokens": 19418,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.6592,
+    "timestamp": "2026-03-18T22:29:09.611999"
+  },
+  {
+    "task_id": "l1_agent_06_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 390710,
+    "output_tokens": 21886,
+    "thinking_tokens": 0,
+    "search_count": 11,
+    "estimated_cost_usd": 1.6104,
+    "timestamp": "2026-03-18T22:54:50.084575"
+  },
+  {
+    "task_id": "l1_agent_06_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 76367,
+    "output_tokens": 18578,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.5378,
+    "timestamp": "2026-03-18T23:01:21.059124"
+  },
+  {
+    "task_id": "l1_agent_06_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 118014,
+    "output_tokens": 21059,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.6999,
+    "timestamp": "2026-03-18T23:08:51.753763"
+  },
+  {
+    "task_id": "l1_agent_06_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 471024,
+    "output_tokens": 19854,
+    "thinking_tokens": 0,
+    "search_count": 12,
+    "estimated_cost_usd": 1.8309,
+    "timestamp": "2026-03-18T23:20:55.015332"
+  },
+  {
+    "task_id": "l1_agent_06_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 78597,
+    "output_tokens": 15733,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.5018,
+    "timestamp": "2026-03-18T23:26:46.754903"
+  },
+  {
+    "task_id": "l1_agent_06_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 109105,
+    "output_tokens": 16845,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.61,
+    "timestamp": "2026-03-18T23:33:07.867613"
+  },
+  {
+    "task_id": "l1_agent_05_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 360933,
+    "output_tokens": 20856,
+    "thinking_tokens": 0,
+    "search_count": 11,
+    "estimated_cost_usd": 1.5056,
+    "timestamp": "2026-03-18T22:15:25.901519"
+  },
+  {
+    "task_id": "l1_agent_05_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 144016,
+    "output_tokens": 23010,
+    "thinking_tokens": 0,
+    "search_count": 4,
+    "estimated_cost_usd": 0.8172,
+    "timestamp": "2026-03-18T22:23:53.999264"
+  },
+  {
+    "task_id": "l1_agent_05_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 123415,
+    "output_tokens": 19966,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.6997,
+    "timestamp": "2026-03-18T22:31:37.986253"
+  },
+  {
+    "task_id": "l1_agent_05_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 212039,
+    "output_tokens": 21020,
+    "thinking_tokens": 0,
+    "search_count": 9,
+    "estimated_cost_usd": 1.0414,
+    "timestamp": "2026-03-18T22:57:30.273019"
+  },
+  {
+    "task_id": "l1_agent_05_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 82747,
+    "output_tokens": 20196,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.5812,
+    "timestamp": "2026-03-18T23:05:23.128296"
+  },
+  {
+    "task_id": "l1_agent_05_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 115228,
+    "output_tokens": 20600,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.6847,
+    "timestamp": "2026-03-18T23:13:20.893275"
+  },
+  {
+    "task_id": "l1_agent_05_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 346749,
+    "output_tokens": 20642,
+    "thinking_tokens": 0,
+    "search_count": 11,
+    "estimated_cost_usd": 1.4599,
+    "timestamp": "2026-03-18T23:32:13.084888"
+  },
+  {
+    "task_id": "l1_agent_05_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 132038,
+    "output_tokens": 18328,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.701,
+    "timestamp": "2026-03-18T23:39:38.322070"
+  },
+  {
+    "task_id": "l1_agent_05_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 192510,
+    "output_tokens": 17324,
+    "thinking_tokens": 0,
+    "search_count": 4,
+    "estimated_cost_usd": 0.8774,
+    "timestamp": "2026-03-18T23:46:50.174443"
   }
 ]

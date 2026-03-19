@@ -52,7 +52,9 @@ This is the hook — the paragraph that determines whether the MD keeps reading 
 
 **Open with the reader's world, not the company's product.** Start with a market event, a recent transaction, a competitor collapse, or a regulatory shift that the reader already knows about — then reveal what this company uniquely offers in that context. The reader should recognize their own landscape in the first sentence and see something new by the third.
 
-For example: if a major competitor just failed, lead with that failure and what it stranded — then introduce the company as the replacement asset. If a hyperscaler just paid $5B for an inferior asset class, lead with that transaction — then show why this company is the better version at a lower price. The reader's attention is captured by things they already care about, not by product descriptions of companies they've never heard of.
+**Prefer a narrative reversal over a benchmark.** The strongest hooks start with something the reader already knows and deliver a twist: "CRH and Holcim invested $75M in X. X has since collapsed. There is exactly one replacement asset, and it has no strategic investor." A story with a reversal (invested → collapsed → replacement exists) earns the second paragraph because it creates tension. A comp-table benchmark ("CRH paid $2.1B for Y — the benchmark acquisition") just sets context. Use a benchmark opening only when the research doesn't support a stronger narrative entry point.
+
+The reader's attention is captured by things they already care about, not by product descriptions of companies they've never heard of.
 
 Requirements:
 - Must contain at least TWO specific numbers with sources
@@ -88,7 +90,7 @@ Tone: Authoritative, specific, analytical. Every sentence earns its place. An MD
 
 ### III. KEY FINDINGS
 
-**Length: 800-1200 words total across exactly 3 findings.**
+**Length: 800-1050 words total across exactly 3 findings. Each finding should be 250-350 words: Observation (100-150 words), Deal Implication (80-120 words), Open Questions (50-80 words). If a finding requires more than 350 words, the Observation is insufficiently compressed.**
 
 Write the 3 findings specified in the Finding Selection Brief. The brief provides: the working title, source tension points, core insight, evidence mix, deal implication, and key open questions for each.
 
@@ -111,11 +113,13 @@ BAD: "Revenue Decomposition Shows Higher-Than-Expected Margins"
 
 **The Deal Implication** (2-4 sentences): What this means for valuation, deal timing, buyer interest, or deal structure. Connect the observation to a specific dollar impact, multiple turn, or transaction outcome. This is what makes the finding useful to a banker, not just interesting to an analyst. State the conclusion and the key inputs; detailed calculation chains belong in the Calculation Notes section.
 
-**Open Questions** (2-5 bullet points): Each finding closes with a bulleted list of questions that the research surfaced but could not definitively resolve from public data. These are NOT caveats or hedges — they are the most strategically interesting unresolved questions, framed to make the reader lean back and think. Write them in a narrative, discursive style — not as dry diligence items but as the kind of questions that would spark a compelling conversation over coffee. Even technically complex questions should be framed for a deal audience: "the answer to one laboratory measurement determines whether this is a $200M company or a $400M company" is more compelling than the chemistry alone. The best open questions make the reader realize they don't know the answer either, and want to find out. Format as a bulleted list for readability.
+**Open Questions** (1-3 per finding, 1-2 sentences each): The sharpest questions this research could not answer. Write them as the senior MD would ask them — the person who reads the finding, closes the document, and asks the one question that collapses the entire story into whatever the answer turns out to be. "Has anyone independently assayed the alumina?" is better than a paragraph explaining why the assay matters. The finding's Observation and Deal Implication already provide the context — the question does not need to re-derive it. If you find yourself explaining *why* a question matters, delete the explanation. Each question should land in under 30 words. If it takes more, the question isn't sharp enough yet. Format as a bulleted list.
 
 Do NOT label these as "Tension Point 1" or "Finding 1." Each stands on its own with its descriptive title.
 
 **Cross-references between findings:** The selection brief notes where findings interact. Where the same thesis or data point appears in multiple findings, each mention must add a new dimension — not repeat the same point at the same depth. If Finding 1 establishes that the alumina is unverified, and Finding 3's valuation depends on the alumina being on-spec, the second reference should add the valuation implication, not restate the lab-test gap.
+
+**Cross-section repetition:** Where the central thesis appears across Section I, Section II, and a Finding, each mention must escalate — not repeat. If the Sublime collapse appears in The Opportunity, Company Situation, and a Finding, the third mention should add the deal-structure implication (non-compete scope, CRH's constraint), not restate the workforce reduction. Each section builds; none echo.
 
 After the three findings, add a single line:
 
@@ -238,7 +242,7 @@ When citing precedent transactions, include deal metrics: "[Buyer] acquired [Tar
 - [ ] All 3 Key Findings would genuinely surprise a sector banker — none are "obvious"
 - [ ] All 3 Key Findings connect a risk or information gap to a specific deal opportunity — none read as pure criticism
 - [ ] All 3 Key Findings have specific numbers with sources — no unsupported claims
-- [ ] Each finding's Open Questions are narrative and thought-provoking — not dry diligence items
+- [ ] Each finding's Open Questions are razor-sharp — each lands in 1-2 sentences and collapses the finding to its single point of maximum leverage
 - [ ] Compound findings read as single coherent insights — the seams between source TPs are invisible
 - [ ] CIRCUMSTANTIAL findings are presented with appropriate inferential language — not over-hedged into uselessness, not upgraded to declarative
 - [ ] Cross-references between findings add new dimensions — not the same point at the same depth
@@ -251,6 +255,7 @@ When citing precedent transactions, include deal metrics: "[Buyer] acquired [Tar
 - [ ] Every number is tagged as either third-party sourced (in Source Notes) or `[Pokee estimate]` (in Calculation Notes)
 - [ ] Negative claims (X doesn't exist, no agreement signed) enumerate the specific sources reviewed to establish absence
 - [ ] Precedent transaction table includes a Type column (M&A / Minority / Government)
+- [ ] Where the central thesis appears in multiple sections, each mention adds a new dimension — not the same point at the same depth
 - [ ] The most time-sensitive catalyst (nearest hard date) is positioned prominently, not buried in a middle paragraph
 - [ ] An MD who reads this would learn something they didn't know and want to have a conversation
 - [ ] A VP who reads this would be impressed by the analytical depth and want to show their MD

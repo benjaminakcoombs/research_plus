@@ -58,7 +58,8 @@ For each finding:
 - **Does the observation paragraph have the strongest evidence from the research corpus?** Check the L2 deep dives — there may be a more powerful data point, a better comparable, or a more specific citation that the L3a draft didn't surface. Add it.
 - **Does the deal implication connect the insight to an opportunity, not just a risk?** Every finding should make the reader think "I want to act on this" — not just "that's concerning." If a finding reads as purely negative, add the deal angle: who benefits, what it creates, what the timing window is.
 - **Is there a cross-reference between findings that the draft missed?** Often findings interlock — e.g., a data gap affects the viability of a buyer thesis in another finding, or a regulatory change creates urgency for a catalyst identified elsewhere. If the findings connect, add a sentence making that connection explicit.
-- **Are the Open Questions thought-provoking and formatted as bullets?** Each finding should close with a bulleted list of 2-5 questions that make the reader lean back and think. These should be narrative and discursive — the kind of questions that would spark an interesting conversation, not dry diligence items. Even technically complex questions should be framed for a deal audience — connect the technical detail to the dollar impact. Check: would an MD read these questions and think "huh, I actually don't know the answer to that"? If the questions feel like a checklist, rewrite them to feel like provocations. If they're not formatted as bullets, reformat them.
+- **Are the Open Questions razor-sharp?** Each finding should close with 1-3 questions, each 1-2 sentences maximum. These are the questions a senior MD would ask after reading the finding — the one question that collapses the entire story into whatever the answer turns out to be. Test: would the room go quiet? If a question takes more than two sentences, it's explaining instead of asking — delete the explanation, the finding already provides the context. If a question exceeds 30 words, it isn't sharp enough. If the questions feel discursive or narrative, compress them until they cut.
+- **Check word count per finding.** Each finding should be 250-350 words total (Observation + Deal Implication + Open Questions). If any finding exceeds 350 words, identify what to compress — usually the Observation contains a sentence that restates rather than adds.
 - **Cross-section repetition check.** Read Section I, Section II, and Section III as a sequence. If the same claim appears in multiple sections, does each mention add a new dimension — a new data point, a new implication, a new angle? Each mention should earn its place.
 
 After the three findings, verify the held-back teaser paragraph:
@@ -120,8 +121,6 @@ The output must follow the exact same structure as the L3a input:
 - Source Notes
 
 If you find that the L3a draft is already excellent and needs minimal changes, that's fine — produce it with only the changes it actually needs. Do not rewrite for the sake of rewriting. But if a section is weak, rewrite it substantially.
-
-Note: This document will pass through an L3c coherency audit after your edits, which checks for internal contradictions, unsourced claims, and numerical consistency. Your goal is to produce a document so clean that L3c finds nothing to fix. Every factual claim sourced, every number consistent, every assertion logically compatible with every other assertion in the document. L3c is the safety net — not the primary mechanism.
 
 ---
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ───────────────────────────────────────────────────────────────
-# L3 refresh: branch from L2, re-run L3a + L3b, generate PDF
+# L3 refresh: branch from L2, re-run L3a_select + L3a_write + L3b + L3c + L3d (PDF)
 #
 # Usage:
 #   ./run_l3_refresh.sh                    # Both Brimstone + Fervo
@@ -29,10 +29,10 @@ run_refresh() {
     echo "╚══════════════════════════════════════════════════════════════╝"
     echo ""
 
-    # Step 1: Branch from base run, restart from L3a
-    echo "→ Branching from $run_id (restart from L3a)..."
+    # Step 1: Branch from base run, restart from L3a_select through L3d (PDF)
+    echo "→ Branching from $run_id (restart from L3a_select → L3d)..."
     local branch_output
-    branch_output=$(python -m deep_research --branch-from "$run_id" --restart-from l3a --stop-after l3b 2>&1)
+    branch_output=$(python -m deep_research --branch-from "$run_id" --restart-from l3a_select --stop-after l3d 2>&1)
     echo "$branch_output"
 
     # Extract the new run ID from output
@@ -62,15 +62,21 @@ run_refresh() {
         return 1
     fi
 
-    # Step 3: Generate PDF
+    # Step 3: Check for pipeline-generated PDF (L3d), fallback to standalone generator
     local safe_company
     safe_company=$(echo "$company" | tr ' ' '_')
     local timestamp
     timestamp=$(date +%Y%m%d_%H%M)
+    local pipeline_pdf="outputs/${new_run_id}/l3_deep_analysis.pdf"
     local pdf_file="${safe_company}_Deep_Analysis_${timestamp}.pdf"
 
-    echo "→ Generating PDF: $pdf_file"
-    python generate_pdf.py "$l3_file" "$pdf_file"
+    if [[ -f "$pipeline_pdf" ]]; then
+        echo "→ Pipeline PDF found, copying: $pdf_file"
+        cp "$pipeline_pdf" "$pdf_file"
+    else
+        echo "→ No pipeline PDF found, generating via standalone: $pdf_file"
+        python generate_pdf.py "$l3_file" "$pdf_file"
+    fi
 
     echo ""
     echo "✓ Complete: $company"
@@ -82,7 +88,7 @@ run_refresh() {
 
 # ── Main ──
 echo "L3 Refresh Script"
-echo "Using current L3a/L3b templates from prompts/situation_assessment/"
+echo "Using L3a_select/L3a_write/L3b/L3c templates from prompts/situation_assessment/"
 echo ""
 
 if [[ "$FILTER" == "all" || "$FILTER" == "brimstone" ]]; then
