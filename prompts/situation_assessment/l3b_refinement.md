@@ -58,7 +58,7 @@ For each finding:
 - **Does the observation paragraph have the strongest evidence from the research corpus?** Check the L2 deep dives — there may be a more powerful data point, a better comparable, or a more specific citation that the L3a draft didn't surface. Add it.
 - **Does the deal implication connect the insight to an opportunity, not just a risk?** Every finding should make the reader think "I want to act on this" — not just "that's concerning." If a finding reads as purely negative, add the deal angle: who benefits, what it creates, what the timing window is.
 - **Is there a cross-reference between findings that the draft missed?** Often findings interlock — e.g., a data gap affects the viability of a buyer thesis in another finding, or a regulatory change creates urgency for a catalyst identified elsewhere. If the findings connect, add a sentence making that connection explicit.
-- **Are the Open Questions thought-provoking?** Each finding should close with 2-5 questions that make the reader lean back and think. These should be narrative and discursive — the kind of questions that would spark an interesting conversation, not dry diligence items. Check: would an MD read these questions and think "huh, I actually don't know the answer to that"? If the questions feel like a checklist, rewrite them to feel like provocations.
+- **Are the Open Questions thought-provoking and formatted as bullets?** Each finding should close with a bulleted list of 2-5 questions that make the reader lean back and think. These should be narrative and discursive — the kind of questions that would spark an interesting conversation, not dry diligence items. Even technically complex questions should be framed for a deal audience — connect the technical detail to the dollar impact. Check: would an MD read these questions and think "huh, I actually don't know the answer to that"? If the questions feel like a checklist, rewrite them to feel like provocations. If they're not formatted as bullets, reformat them.
 - **Cross-section repetition check.** Read Section I, Section II, and Section III as a sequence. If the same claim appears in multiple sections, does each mention add a new dimension — a new data point, a new implication, a new angle? Each mention should earn its place.
 
 After the three findings, verify the held-back teaser paragraph:
@@ -84,7 +84,7 @@ After the three findings, verify the held-back teaser paragraph:
 
 Work through these checks:
 
-- **Two-category scan.** Read every number in the document. Each must be either (a) sourced to a named third-party publication in Source Notes, or (b) marked as `[Pokee estimate]` with full calculation in Calculation Notes. If a number is neither, fix it.
+- **Two-category scan.** Read every number in the document. Each must be either (a) sourced to a named third-party publication in Source Notes (Arabic numeral footnote: ^1, ^2...), or (b) marked as `[Pokee estimate]` with full calculation in Calculation Notes (Roman numeral footnote: ^i, ^ii...). If a number is neither, fix it. Verify that Arabic and Roman numerals are used consistently — no Source Notes with Roman numerals or Calculation Notes with Arabic numerals.
 - **Calculation Notes completeness.** Every `[Pokee estimate]` footnote must show: the inputs, the formula/methodology, the key assumptions, and where those inputs came from (referencing Source Notes where applicable). A reader should be able to reproduce the calculation from the footnote alone. Group related calculations logically (e.g., revenue build, then margin analysis, then valuation).
 - **Source Notes specificity.** Each source citation must include document name and date at minimum. "Company press releases" is not acceptable — "BusinessWire, [Company] press release, June 30, 2025" is.
 - **Negative-claim scan.** Find every assertion that something doesn't exist (no agreement signed, no data published, no disclosure made). Does the footnote enumerate the specific sources reviewed to establish the absence? The reader must be able to replicate the search.
@@ -120,6 +120,8 @@ The output must follow the exact same structure as the L3a input:
 - Source Notes
 
 If you find that the L3a draft is already excellent and needs minimal changes, that's fine — produce it with only the changes it actually needs. Do not rewrite for the sake of rewriting. But if a section is weak, rewrite it substantially.
+
+Note: This document will pass through an L3c coherency audit after your edits, which checks for internal contradictions, unsourced claims, and numerical consistency. Your goal is to produce a document so clean that L3c finds nothing to fix. Every factual claim sourced, every number consistent, every assertion logically compatible with every other assertion in the document. L3c is the safety net — not the primary mechanism.
 
 ---
 

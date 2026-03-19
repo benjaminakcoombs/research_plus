@@ -44,10 +44,9 @@ SA_ARCHETYPE_TO_CALIBRATION = {
     CompanyArchetype.PROFESSIONAL_SERVICES: "business_services.md",
     CompanyArchetype.RETAILER_DISTRIBUTOR: "business_services.md",
     CompanyArchetype.FINANCIAL_SERVICES: "business_services.md",
-    # Energy/industrial archetypes → energy_technology calibration examples
-    # (Plug Power examples are far more relevant than business services for these)
+    # Energy/industrial archetypes
     CompanyArchetype.MANUFACTURER: "energy_technology.md",
-    CompanyArchetype.EXTRACTOR_GROWER: "energy_technology.md",
+    CompanyArchetype.EXTRACTOR_GROWER: "specialty_chemicals.md",
     CompanyArchetype.INFRASTRUCTURE_UTILITIES: "energy_technology.md",
     # Remaining archetypes default to business_services until dedicated files are created
     CompanyArchetype.CONGLOMERATE: "business_services.md",
@@ -164,9 +163,22 @@ class PromptBuilder:
         prompt = prompt.replace("{L15_TENSION_POINTS}", l15_tension_points)
         return prompt
 
-    def build_l3a(self, company_name: str, run: ResearchRun) -> str:
-        """Build the L3a synthesis prompt."""
-        template = self._load_template("l3a_synthesis.md")
+    def build_l3a_select(self, company_name: str, run: ResearchRun) -> str:
+        """Build the L3a finding selection prompt."""
+        template = self._load_template("l3a_select.md")
+
+        all_outputs = assemble_l3_input(run, self.config.max_context_tokens)
+
+        prompt = template.replace("{COMPANY_NAME}", company_name)
+        prompt = prompt.replace("{N_L1_AGENTS}", str(len(run.l1_outputs)))
+        prompt = prompt.replace("{N_TENSION_POINTS}", str(len(run.tension_points)))
+        prompt = prompt.replace("{N_L2_AGENTS}", str(len(run.l2_outputs)))
+        prompt = prompt.replace("{ALL_OUTPUTS}", all_outputs)
+        return prompt
+
+    def build_l3a_write(self, company_name: str, run: ResearchRun, l3a_select_output: str) -> str:
+        """Build the L3a document writing prompt, consuming the selection brief."""
+        template = self._load_template("l3a_write.md")
 
         all_outputs = assemble_l3_input(run, self.config.max_context_tokens)
         now = datetime.now()
@@ -175,8 +187,8 @@ class PromptBuilder:
         prompt = prompt.replace("{N_L1_AGENTS}", str(len(run.l1_outputs)))
         prompt = prompt.replace("{N_TENSION_POINTS}", str(len(run.tension_points)))
         prompt = prompt.replace("{N_L2_AGENTS}", str(len(run.l2_outputs)))
+        prompt = prompt.replace("{L3A_SELECT_OUTPUT}", l3a_select_output)
         prompt = prompt.replace("{ALL_OUTPUTS}", all_outputs)
-        # Substitute date placeholders so the cover page shows the correct month/year
         prompt = prompt.replace("{CURRENT_MONTH}", now.strftime("%B"))
         prompt = prompt.replace("{CURRENT_YEAR}", str(now.year))
         return prompt
@@ -189,6 +201,17 @@ class PromptBuilder:
 
         prompt = template.replace("{COMPANY_NAME}", company_name)
         prompt = prompt.replace("{L3A_OUTPUT}", l3a_output)
+        prompt = prompt.replace("{ALL_OUTPUTS}", all_outputs)
+        return prompt
+
+    def build_l3c(self, company_name: str, run: ResearchRun, l3b_output: str) -> str:
+        """Build the L3c coherency audit prompt."""
+        template = self._load_template("l3c_coherency_audit.md")
+
+        all_outputs = assemble_l3_input(run, self.config.max_context_tokens)
+
+        prompt = template.replace("{COMPANY_NAME}", company_name)
+        prompt = prompt.replace("{L3B_OUTPUT}", l3b_output)
         prompt = prompt.replace("{ALL_OUTPUTS}", all_outputs)
         return prompt
 

@@ -638,26 +638,61 @@ class DeepResearchOrchestrator:
         run.current_layer = "l2"
         return run
 
-    async def run_l3a(self, run: ResearchRun) -> ResearchRun:
-        """L3a: Synthesis — produce initial draft of the final document."""
+    async def run_l3a_select(self, run: ResearchRun) -> ResearchRun:
+        """L3a-Select: Finding selection — decide which 3 findings to write, with cross-TP threading."""
         runner = self._ensure_runner()
 
         if not run.l2_outputs:
-            raise ValueError("Cannot run L3a without L2 outputs")
+            raise ValueError("Cannot run L3a-Select without L2 outputs")
 
-        logger.info("[L3a] Producing synthesis draft...")
+        logger.info("[L3a-Select] Building finding selection brief...")
 
-        prompt = self.prompt_builder.build_l3a(
+        prompt = self.prompt_builder.build_l3a_select(
             company_name=run.company_name,
             run=run,
         )
 
         token_count = count_tokens(prompt)
-        logger.info(f"[L3a] Input size: {token_count} tokens")
+        logger.info(f"[L3a-Select] Input size: {token_count} tokens")
 
         text, costs = await runner.run_synthesis(
             prompt,
-            task_id="l3a_synthesis",
+            task_id="l3a_select",
+            model=self.config.synthesis_model,
+        )
+
+        run.cost_records.extend(costs)
+        run.total_cost_usd = runner.total_cost
+
+        run.l3a_select_output = text
+
+        logger.info("[L3a-Select] Finding selection brief complete")
+
+        run.status = "l3a_select_complete"
+        run.current_layer = "l3a_select"
+        return run
+
+    async def run_l3a_write(self, run: ResearchRun) -> ResearchRun:
+        """L3a-Write: Synthesis — produce initial draft using the finding selection brief."""
+        runner = self._ensure_runner()
+
+        if not run.l3a_select_output:
+            raise ValueError("Cannot run L3a-Write without L3a-Select output")
+
+        logger.info("[L3a-Write] Producing synthesis draft from selection brief...")
+
+        prompt = self.prompt_builder.build_l3a_write(
+            company_name=run.company_name,
+            run=run,
+            l3a_select_output=run.l3a_select_output,
+        )
+
+        token_count = count_tokens(prompt)
+        logger.info(f"[L3a-Write] Input size: {token_count} tokens")
+
+        text, costs = await runner.run_synthesis(
+            prompt,
+            task_id="l3a_write",
             model=self.config.synthesis_model,
         )
 
@@ -666,10 +701,10 @@ class DeepResearchOrchestrator:
 
         run.l3a_draft = text
 
-        logger.info("[L3a] Synthesis draft complete")
+        logger.info("[L3a-Write] Synthesis draft complete")
 
-        run.status = "l3a_complete"
-        run.current_layer = "l3a"
+        run.status = "l3a_write_complete"
+        run.current_layer = "l3a_write"
         return run
 
     async def run_l3b(self, run: ResearchRun) -> ResearchRun:
@@ -712,35 +747,84 @@ class DeepResearchOrchestrator:
         return run
 
     async def run_l3c(self, run: ResearchRun) -> ResearchRun:
-        """L3c: PDF Generation — convert the L3b markdown to a styled PDF.
+        """L3c: Coherency Audit — fact-check and verify internal consistency.
+
+        This is an LLM step that reads the L3b document as a hostile reviewer,
+        checking for internal contradictions, unsourced claims, body-vs-Open-Questions
+        inconsistency, numerical errors, and source-claim alignment.
+        """
+        runner = self._ensure_runner()
+
+        if not run.l3b_final:
+            raise ValueError("Cannot run L3c without L3b output")
+
+        logger.info("[L3c] Running coherency audit...")
+
+        prompt = self.prompt_builder.build_l3c(
+            company_name=run.company_name,
+            run=run,
+            l3b_output=run.l3b_final,
+        )
+
+        token_count = count_tokens(prompt)
+        logger.info(f"[L3c] Input size: {token_count} tokens")
+
+        text, costs = await runner.run_synthesis(
+            prompt,
+            task_id="l3c_coherency_audit",
+            model=self.config.synthesis_model,
+        )
+
+        run.cost_records.extend(costs)
+        run.total_cost_usd = runner.total_cost
+
+        # Extract the audit log if present (appears after "### Coherency Audit Log")
+        audit_marker = "### Coherency Audit Log"
+        if audit_marker in text:
+            split_idx = text.index(audit_marker)
+            run.l3c_output = text[:split_idx].rstrip()
+            run.l3c_audit_log = text[split_idx:].strip()
+            logger.info(f"[L3c] Audit log extracted ({len(run.l3c_audit_log)} chars)")
+        else:
+            run.l3c_output = text
+            run.l3c_audit_log = "No audit log section found in output."
+
+        logger.info("[L3c] Coherency audit complete")
+
+        run.status = "l3c_complete"
+        run.current_layer = "l3c"
+        return run
+
+    async def run_l3d(self, run: ResearchRun) -> ResearchRun:
+        """L3d: PDF Generation — convert the L3c-audited markdown to a styled PDF.
 
         This is a programmatic step (no LLM call). It uses ReportLab to produce
         a professional PDF matching the Pokee AI Deep Analysis house style.
         """
         from .pdf_generator import build_pdf_from_run
 
-        if not run.l3b_final:
-            raise ValueError("Cannot run L3c without L3b output")
+        # Use L3c output (coherency-audited) if available, else fall back to L3b
+        final_text = run.l3c_output or run.l3b_final
+        if not final_text:
+            raise ValueError("Cannot run L3d without L3c or L3b output")
 
-        logger.info("[L3c] Generating styled PDF...")
+        logger.info("[L3d] Generating styled PDF...")
 
-        # Ensure L3b markdown is saved to disk before PDF generation
+        # Ensure the final markdown is saved to disk before PDF generation
         run.save(self.config.output_dir)
 
         pdf_path = build_pdf_from_run(run, self.config.output_dir)
 
         if pdf_path is not None:
-            # Store the path relative to the run directory for portability
             run_dir = self.config.output_dir / run.id
-            run.l3c_pdf_path = str(pdf_path.relative_to(run_dir))
-            logger.info(f"[L3c] PDF generated: {pdf_path}")
+            run.l3d_pdf_path = str(pdf_path.relative_to(run_dir))
+            logger.info(f"[L3d] PDF generated: {pdf_path}")
         else:
-            logger.warning("[L3c] PDF generation skipped (reportlab not installed or L3b file missing)")
-            # Still mark as complete — PDF is a nice-to-have, not blocking
-            run.l3c_pdf_path = None
+            logger.warning("[L3d] PDF generation skipped (reportlab not installed or file missing)")
+            run.l3d_pdf_path = None
 
-        run.status = "l3c_complete"
-        run.current_layer = "l3c"
+        run.status = "l3d_complete"
+        run.current_layer = "l3d"
         return run
 
     # ── L4 Full Report Pipeline ────────────────────────────────────────
@@ -1589,7 +1673,7 @@ Write {len(gaps)} prompts total."""
         if self.config.pipeline_mode == "strategic_briefing" and stop_idx >= LAYER_ORDER.index("l3b"):
             raise ValueError(
                 f"Cannot run past L3a in strategic_briefing mode — "
-                f"templates for L3b/L3c/L4 are not yet implemented. "
+                f"templates for L3b/L3c/L3d/L4 are not yet implemented. "
                 f"Use --mode situation_assessment or --stop-after l3a."
             )
 
@@ -1615,9 +1699,11 @@ Write {len(gaps)} prompts total."""
             "l1": self.run_l1,
             "l15": self.run_l15,
             "l2": self.run_l2,
-            "l3a": self.run_l3a,
+            "l3a_select": self.run_l3a_select,
+            "l3a_write": self.run_l3a_write,
             "l3b": self.run_l3b,
             "l3c": self.run_l3c,
+            "l3d": self.run_l3d,
             "l4a": self.run_l4a,
             "l4b": self.run_l4b,
             "l4c": self.run_l4c,

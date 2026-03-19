@@ -115,7 +115,7 @@ Inferences drawn from observable patterns — a bank's absence from an advisory 
 
 **The Deal Implication** (2-4 sentences): What this means for valuation, deal timing, buyer interest, or deal structure. Connect the observation to a specific dollar impact, multiple turn, or transaction outcome. This is what makes the finding useful to a banker, not just interesting to an analyst. State the conclusion and the key inputs; detailed calculation chains belong in the Calculation Notes section.
 
-**Open Questions** (2-5 questions): Each finding closes with a set of questions that the research surfaced but could not definitively resolve from public data. These are NOT caveats or hedges — they are the most strategically interesting unresolved questions, framed to make the reader lean back and think. Write them in a narrative, discursive style — not as dry diligence items but as the kind of questions that would spark a compelling conversation over coffee. The best open questions make the reader realize they don't know the answer either, and want to find out.
+**Open Questions** (2-5 bullet points): Each finding closes with a bulleted list of questions that the research surfaced but could not definitively resolve from public data. These are NOT caveats or hedges — they are the most strategically interesting unresolved questions, framed to make the reader lean back and think. Write them in a narrative, discursive style — not as dry diligence items but as the kind of questions that would spark a compelling conversation over coffee. Even technically complex questions should be framed for a deal audience: "the answer to one laboratory measurement determines whether this is a $200M company or a $400M company" is more compelling than the chemistry alone. The best open questions make the reader realize they don't know the answer either, and want to find out. Format as a bulleted list for readability.
 
 Do NOT label these as "Tension Point 1" or "Finding 1." Each stands on its own with its descriptive title.
 
@@ -177,19 +177,19 @@ This section must be clean, confident, and clearly commercial without being push
 
 ## CITATION AND SOURCING
 
-Credibility with a banking audience depends on sourcing. This document uses two separate reference systems:
+Credibility with a banking audience depends on sourcing. This document uses two separate reference systems with **distinct numbering**:
 
-1. **Source Notes** — Third-party citations only. Every factual claim sourced to a named publication with document name, author/publisher, and date. These appear at the end of the document after Calculation Notes.
-2. **Calculation Notes** — All estimates, financial models, and derived figures produced by this analysis. These appear after the About section and before Source Notes.
+1. **Source Notes** — Third-party citations only. Numbered with Arabic numerals (^1, ^2, ^3...). Every factual claim sourced to a named publication with document name, author/publisher, and date. These appear at the end of the document after Calculation Notes.
+2. **Calculation Notes** — All estimates, financial models, and derived figures produced by this analysis. Numbered with Roman numerals (^i, ^ii, ^iii...). These appear after the About section and before Source Notes.
 
-Use numbered footnotes (^1, ^2, ^3...) throughout the document body. Source Notes and Calculation Notes share a single continuous numbering sequence. Do NOT use inline [Source: ...] citations — those look like raw research output, not a client deliverable.
+The two numbering systems are independent — the reader can immediately tell whether a footnote leads to a verifiable source (Arabic) or a Pokee calculation (Roman). Do NOT use inline [Source: ...] citations — those look like raw research output, not a client deliverable.
 
 ### The two-category rule
 
 Every number in this document falls into exactly one of two categories:
 
-1. **Third-party sourced** — from a specific, named publication. The footnote appears in **Source Notes** and must cite the document name, author/publisher, and date (e.g., "^7 CRH plc, Annual Report 2024, p. 47."). If a web source, include the article title and publication date.
-2. **Estimated or calculated by this analysis** — the footnote appears in **Calculation Notes**, must begin with `[Pokee estimate]`, and show the full calculation with inputs, methodology, and any assumptions (e.g., "^10 [Pokee estimate] 80,000 t × $140/t = $11.2M. Pricing based on Portland Cement Association U.S. regional data, 2024–2025."). Calculation Notes may reference Source Notes for their inputs.
+1. **Third-party sourced** — from a specific, named publication. The footnote uses an Arabic numeral and appears in **Source Notes**, citing the document name, author/publisher, and date (e.g., "^7 CRH plc, Annual Report 2024, p. 47."). If a web source, include the article title and publication date.
+2. **Estimated or calculated by this analysis** — the footnote uses a Roman numeral and appears in **Calculation Notes**, beginning with `[Pokee estimate]` and showing the full calculation with inputs, methodology, and any assumptions (e.g., "^iii [Pokee estimate] 80,000 t × $140/t = $11.2M. Pricing based on Portland Cement Association U.S. regional data, 2024–2025."). Calculation Notes may reference Source Notes for their inputs (e.g., "pricing per Source ^7").
 
 There is no third category. If you cannot identify which category a number belongs to, you cannot include it.
 

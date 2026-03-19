@@ -37,7 +37,7 @@ run_refresh() {
 
     # Extract the new run ID from output
     local new_run_id
-    new_run_id=$(echo "$branch_output" | grep -oP '(?:New run: |SA_)\S+' | head -1 | sed 's/New run: //')
+    new_run_id=$(echo "$branch_output" | grep -o 'SA_[^ ]*' | head -1)
 
     if [[ -z "$new_run_id" ]]; then
         echo "ERROR: Could not extract new run ID from branch output"

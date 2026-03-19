@@ -252,22 +252,43 @@ async def main(run_id: str, n_agents: int = N_CONTRARIAN_AGENTS) -> None:
         run.save(config.output_dir)
         logger.info(f"  [{task_id}] Saved to disk ({agent_num} total L2 agents)")
 
-    # Step 3: Re-run L3 synthesis (L3a + L3b) with expanded corpus
-    console.print(f"\n[bold]Re-running L3a synthesis with {len(run.l2_outputs)} L2 agents...[/bold]\n")
+    # Step 3: Re-run L3 synthesis (L3a-Select + L3a-Write + L3b) with expanded corpus
+    console.print(f"\n[bold]Re-running L3a finding selection with {len(run.l2_outputs)} L2 agents...[/bold]\n")
 
     prompt_builder = PromptBuilder(config)
 
-    # L3a: synthesis draft
-    l3a_prompt = prompt_builder.build_l3a(
+    # L3a-Select: finding selection brief
+    l3a_select_prompt = prompt_builder.build_l3a_select(
         company_name=run.company_name,
         run=run,
     )
-    token_count = count_tokens(l3a_prompt)
-    logger.info(f"[L3a] Input size: {token_count} tokens")
+    token_count = count_tokens(l3a_select_prompt)
+    logger.info(f"[L3a-Select] Input size: {token_count} tokens")
+
+    l3a_select_text, l3a_select_costs = await runner.run_synthesis(
+        l3a_select_prompt,
+        task_id="l3a_select_v2",
+        model=config.synthesis_model,
+    )
+    run.cost_records.extend(l3a_select_costs)
+    run.total_cost_usd = runner.total_cost
+    run.l3a_select_output = l3a_select_text
+    run.save(config.output_dir)
+
+    console.print(f"\n[bold]Re-running L3a synthesis draft...[/bold]\n")
+
+    # L3a-Write: synthesis draft from selection brief
+    l3a_write_prompt = prompt_builder.build_l3a_write(
+        company_name=run.company_name,
+        run=run,
+        l3a_select_output=l3a_select_text,
+    )
+    token_count = count_tokens(l3a_write_prompt)
+    logger.info(f"[L3a-Write] Input size: {token_count} tokens")
 
     l3a_text, l3a_costs = await runner.run_synthesis(
-        l3a_prompt,
-        task_id="l3a_synthesis_v2",
+        l3a_write_prompt,
+        task_id="l3a_write_v2",
         model=config.synthesis_model,
     )
     run.cost_records.extend(l3a_costs)

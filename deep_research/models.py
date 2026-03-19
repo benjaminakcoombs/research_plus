@@ -60,7 +60,7 @@ class LayerStatus(str, Enum):
 
 
 # Map of valid layer progression
-LAYER_ORDER = ["l0", "l05", "l1", "l15", "l2", "l3a", "l3b", "l3c", "l4a", "l4b", "l4c", "l4d"]
+LAYER_ORDER = ["l0", "l05", "l1", "l15", "l2", "l3a_select", "l3a_write", "l3b", "l3c", "l3d", "l4a", "l4b", "l4c", "l4d"]
 
 LAYER_DISPLAY_NAMES = {
     "l0": "L0: Company Profile",
@@ -68,9 +68,11 @@ LAYER_DISPLAY_NAMES = {
     "l1": "L1: Parallel Research",
     "l15": "L1.5: Consolidation",
     "l2": "L2: Targeted Deep Dives",
-    "l3a": "L3a: Synthesis Draft",
-    "l3b": "L3b: Final Refinement",
-    "l3c": "L3c: PDF Generation",
+    "l3a_select": "L3a-Select: Finding Selection",
+    "l3a_write": "L3a-Write: Synthesis Draft",
+    "l3b": "L3b: Editorial Refinement",
+    "l3c": "L3c: Coherency Audit",
+    "l3d": "L3d: PDF Generation",
     "l4a": "L4a: Report Architect",
     "l4b": "L4b: Section Writers",
     "l4c": "L4c: Editorial Review",
@@ -172,12 +174,16 @@ class ResearchRun(BaseModel):
     l2_prompt_names: list[str] = Field(default_factory=list)
     l2_outputs: list[AgentOutput] = Field(default_factory=list)
 
-    # L3a (synthesis draft)
-    l3a_draft: str | None = None
-    # L3b (refined final output)
+    # L3a (split into selection + writing)
+    l3a_select_output: str | None = None  # Finding selection brief
+    l3a_draft: str | None = None  # Written synthesis draft (output of l3a_write)
+    # L3b (editorial refinement)
     l3b_final: str | None = None
-    # L3c (PDF generation — stores relative path to generated PDF)
-    l3c_pdf_path: str | None = None
+    # L3c (coherency audit — fact-checked and internally consistent version)
+    l3c_output: str | None = None
+    l3c_audit_log: str | None = None
+    # L3d (PDF generation — stores relative path to generated PDF)
+    l3d_pdf_path: str | None = None
 
     # L4a (report architect)
     l4a_output: str | None = None
@@ -216,8 +222,10 @@ class ResearchRun(BaseModel):
             idx = LAYER_ORDER.index(self.current_layer)
             completed_statuses = {
                 "l0_complete", "l05_complete", "l1_complete", "l15_complete",
-                "l2_complete", "l3a_complete", "l3b_complete", "l3c_complete",
-                "l4a_complete", "l4b_complete", "l4c_complete",
+                "l2_complete", "l3a_select_complete", "l3a_write_complete",
+                "l3a_complete",  # backward compat
+                "l3b_complete", "l3c_complete",
+                "l3d_complete", "l4a_complete", "l4b_complete", "l4c_complete",
                 "complete",
             }
             if self.status in completed_statuses:
@@ -236,9 +244,12 @@ class ResearchRun(BaseModel):
             "l1_complete": "l1",
             "l15_complete": "l15",
             "l2_complete": "l2",
-            "l3a_complete": "l3a",
+            "l3a_select_complete": "l3a_select",
+            "l3a_write_complete": "l3a_write",
+            "l3a_complete": "l3a_write",  # backward compat
             "l3b_complete": "l3b",
             "l3c_complete": "l3c",
+            "l3d_complete": "l3d",
             "l4a_complete": "l4a",
             "l4b_complete": "l4b",
             "l4c_complete": "l4c",
@@ -303,14 +314,23 @@ class ResearchRun(BaseModel):
                 safe_name = _safe_filename(output.agent_name)
                 (outputs_dir / f"{safe_name}.md").write_text(output.raw_output)
 
+        if self.l3a_select_output:
+            (run_dir / "l3a_select_brief.md").write_text(self.l3a_select_output)
+
         if self.l3a_draft:
             (run_dir / "l3a_draft.md").write_text(self.l3a_draft)
 
         if self.l3b_final:
+            (run_dir / "l3b_final.md").write_text(self.l3b_final)
+
+        # L3c coherency audit — this is the final document used for PDF generation
+        if self.l3c_output:
             if self.pipeline_mode == "situation_assessment":
-                (run_dir / "l3_deep_analysis.md").write_text(self.l3b_final)
+                (run_dir / "l3_deep_analysis.md").write_text(self.l3c_output)
             else:
-                (run_dir / "l3_executive_briefing.md").write_text(self.l3b_final)
+                (run_dir / "l3_executive_briefing.md").write_text(self.l3c_output)
+            if self.l3c_audit_log:
+                (run_dir / "l3c_audit_log.md").write_text(self.l3c_audit_log)
 
         # L4a report architect
         if self.l4a_output:
@@ -361,14 +381,27 @@ class ResearchRun(BaseModel):
         if run.status == "l3_complete":
             run.status = "l3b_complete"
 
+        # Backward compat: older runs used "l3a" as a single layer
+        if run.current_layer == "l3a":
+            run.current_layer = "l3a_write"
+        if run.status == "l3a_complete":
+            run.status = "l3a_write_complete"
+
         # Backward compat: if status is "complete" but current_layer is l3b,
         # update to l3b_complete so next_layer() returns l3c instead of None
         if run.status == "complete" and run.current_layer == "l3b":
             run.status = "l3b_complete"
         # Backward compat: if status is "complete" but current_layer is l3c,
-        # update to l3c_complete so next_layer() returns l4a instead of None
+        # update to l3c_complete so next_layer() returns l3d instead of None
         if run.status == "complete" and run.current_layer == "l3c":
             run.status = "l3c_complete"
+        # Backward compat: if status is "complete" but current_layer is l3d,
+        # update to l3d_complete so next_layer() returns l4a instead of None
+        if run.status == "complete" and run.current_layer == "l3d":
+            run.status = "l3d_complete"
+        # Backward compat: old runs had l3c as PDF generation with l3c_pdf_path
+        if hasattr(run, "l3c_pdf_path") and run.l3c_pdf_path and not run.l3d_pdf_path:
+            run.l3d_pdf_path = run.l3c_pdf_path
 
         return run
 

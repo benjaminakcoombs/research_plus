@@ -144,9 +144,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--restart-from",
-        choices=["l3a", "l3b", "l4a", "l4b", "l4c", "l4d"],
-        default="l3a",
-        help="Which layer to restart from when branching (default: l3a). Layers before this are kept.",
+        choices=["l3a_select", "l3a", "l3a_write", "l3b", "l4a", "l4b", "l4c", "l4d"],
+        default="l3a_select",
+        help="Which layer to restart from when branching (default: l3a_select). Layers before this are kept.",
     )
 
     # Misc
@@ -236,9 +236,11 @@ def show_run(config: Config, run_id: str) -> None:
         "l1": ("L1 Research", len(run.l1_outputs) > 0, f"{len(run.l1_outputs)} agents" if run.l1_outputs else ""),
         "l15": ("L1.5 Consolidation", run.l15_output is not None, f"{len(run.tension_points)} tension points" if run.tension_points else ""),
         "l2": ("L2 Deep Dives", len(run.l2_outputs) > 0, f"{len(run.l2_outputs)} dives" if run.l2_outputs else ""),
-        "l3a": ("L3a Synthesis Draft", run.l3a_draft is not None, ""),
-        "l3b": ("L3b Final Output", run.l3b_final is not None, ""),
-        "l3c": ("L3c PDF Generation", run.l3c_pdf_path is not None, run.l3c_pdf_path or ""),
+        "l3a_select": ("L3a-Select Finding Selection", run.l3a_select_output is not None, ""),
+        "l3a_write": ("L3a-Write Synthesis Draft", run.l3a_draft is not None, ""),
+        "l3b": ("L3b Editorial Refinement", run.l3b_final is not None, ""),
+        "l3c": ("L3c Coherency Audit", run.l3c_output is not None, run.l3c_audit_log[:80] if run.l3c_audit_log else ""),
+        "l3d": ("L3d PDF Generation", run.l3d_pdf_path is not None, run.l3d_pdf_path or ""),
         "l4a": ("L4a Report Architect", run.l4a_output is not None, f"{len(run.l4b_task_names)} tasks" if run.l4b_task_names else ""),
         "l4b": ("L4b Section Writers", len(run.l4b_outputs) > 0, f"{len(run.l4b_outputs)} sections" if run.l4b_outputs else ""),
         "l4c": ("L4c Editorial Review", run.l4c_editorial_memo is not None, ""),
@@ -285,9 +287,9 @@ def print_summary(run: ResearchRun, config: Config) -> None:
                 rel = f.relative_to(run_dir)
                 console.print(f"  [dim]{rel}[/dim]")
 
-    # Show L3c PDF path if it was generated
-    if run.l3c_pdf_path:
-        pdf_full = run_dir / run.l3c_pdf_path
+    # Show L3d PDF path if it was generated
+    if run.l3d_pdf_path:
+        pdf_full = run_dir / run.l3d_pdf_path
         console.print(f"\n[bold green]PDF:[/bold green] {pdf_full}")
 
     # Show next step hint
@@ -299,7 +301,7 @@ def print_summary(run: ResearchRun, config: Config) -> None:
     else:
         console.print("\n[green]All layers complete! Final reports are ready.[/green]")
 
-        # Generate reports if requested (docx only — PDF is handled by L3c)
+        # Generate reports if requested (docx only — PDF is handled by L3d)
         if config.output_format in ("docx", "all"):
             console.print(f"\nGenerating {config.output_format} reports...")
             outputs = generate_reports(run_dir, config.output_format)
@@ -360,7 +362,18 @@ async def main_async(args: argparse.Namespace) -> int:
         # Determine what to clear based on restart_from
         restart = getattr(args, "restart_from", "l3a")
         clear_layers = {
-            "l3a": ["l3a_draft", "l3b_final", "l4a_output", "l4a_style_guide", "l4a_outline",
+            "l3a_select": ["l3a_select_output", "l3a_draft", "l3b_final",
+                     "l4a_output", "l4a_style_guide", "l4a_outline",
+                     "l4b_task_briefs", "l4b_task_names", "l4b_task_sections", "l4b_task_models",
+                     "l4b_source_assignments", "l4b_outputs", "l4c_editorial_memo",
+                     "l4c_global_notes", "l4c_section_notes", "l4d_outputs", "l4_final_report"],
+            "l3a": ["l3a_select_output", "l3a_draft", "l3b_final",
+                     "l4a_output", "l4a_style_guide", "l4a_outline",
+                     "l4b_task_briefs", "l4b_task_names", "l4b_task_sections", "l4b_task_models",
+                     "l4b_source_assignments", "l4b_outputs", "l4c_editorial_memo",
+                     "l4c_global_notes", "l4c_section_notes", "l4d_outputs", "l4_final_report"],
+            "l3a_write": ["l3a_draft", "l3b_final",
+                     "l4a_output", "l4a_style_guide", "l4a_outline",
                      "l4b_task_briefs", "l4b_task_names", "l4b_task_sections", "l4b_task_models",
                      "l4b_source_assignments", "l4b_outputs", "l4c_editorial_memo",
                      "l4c_global_notes", "l4c_section_notes", "l4d_outputs", "l4_final_report"],
@@ -381,12 +394,15 @@ async def main_async(args: argparse.Namespace) -> int:
 
         # Map restart layer to the status of the previous layer
         status_before = {
-            "l3a": "l2_complete", "l3b": "l3a_complete",
+            "l3a_select": "l2_complete",
+            "l3a": "l2_complete",  # backward compat alias
+            "l3a_write": "l3a_select_complete",
+            "l3b": "l3a_write_complete",
             "l4a": "l3b_complete", "l4b": "l4a_complete",
             "l4c": "l4b_complete", "l4d": "l4c_complete",
         }
 
-        for field in clear_layers.get(restart, clear_layers["l3a"]):
+        for field in clear_layers.get(restart, clear_layers["l3a_select"]):
             if field in state:
                 if isinstance(state[field], list):
                     state[field] = []
@@ -394,7 +410,7 @@ async def main_async(args: argparse.Namespace) -> int:
                     state[field] = None
 
         state["status"] = status_before.get(restart, "l2_complete")
-        state["current_layer"] = LAYER_ORDER[LAYER_ORDER.index(restart) - 1] if restart != "l3a" else "l2"
+        state["current_layer"] = LAYER_ORDER[LAYER_ORDER.index(restart) - 1] if restart not in ("l3a_select", "l3a") else "l2"
 
         # Reset cost to parent's cost at the restart point (keep L0-L2 costs)
         # Don't reset — the budget tracker uses runner.total_cost which syncs on load
@@ -462,7 +478,7 @@ async def main_async(args: argparse.Namespace) -> int:
         if getattr(args, "full_report", False) and config.pipeline_mode == "situation_assessment":
             stop_after = "l4d"
         else:
-            stop_after = "l3c"
+            stop_after = "l3d"
     elif args.stop_after:
         stop_after = args.stop_after
     elif getattr(args, 'dry_run', False):
@@ -531,7 +547,7 @@ async def main_async(args: argparse.Namespace) -> int:
         est_l15 = 6.0  # initial + re-consolidation
         est_l2_per_agent = 2.80  # 3 rounds × ~$0.93/round
         n_l2_agents = min(config.max_l2_agents, max(n_l1_agents, config.min_l2_agents))
-        est_l3 = 8.0  # L3a + L3b (L3c is programmatic PDF generation, ~$0)
+        est_l3 = 10.0  # L3a + L3b + L3c coherency audit (L3d is programmatic PDF generation, ~$0)
         est_quality_checks = 0.20  # Haiku checks
 
         est_l1_total = n_l1_agents * est_l1_per_agent
