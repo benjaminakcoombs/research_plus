@@ -90,6 +90,28 @@ def parse_args() -> argparse.Namespace:
         help="Additional context for the research (e.g., 'Focus on near-term M&A opportunities')",
     )
 
+    # Pipeline mode
+    parser.add_argument(
+        "--mode",
+        choices=["strategic_briefing", "situation_assessment"],
+        default="strategic_briefing",
+        help="Pipeline mode: strategic_briefing (exec/consulting) or situation_assessment (banking/deal)",
+    )
+
+    # Situation Assessment specific inputs
+    parser.add_argument(
+        "--sector",
+        help="Sector context for situation assessment (e.g., 'healthcare services')",
+    )
+    parser.add_argument(
+        "--target-bank",
+        help="Target bank for situation assessment (e.g., 'Perella Weinberg Partners')",
+    )
+    parser.add_argument(
+        "--sub-sector",
+        help="Sub-sector focus (e.g., 'behavioral health', 'physician practice management')",
+    )
+
     # Configuration overrides
     parser.add_argument("--max-cost", type=float, help="Maximum cost in USD (default: 150)")
     parser.add_argument("--max-concurrent", type=int, help="Max concurrent API tasks (default: 5)")
@@ -97,10 +119,34 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--synthesis-model", help="Model for synthesis tasks")
     parser.add_argument("--search-rounds", type=int, help="Max search rounds per research task")
     parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Run L0 + L0.5 only, then estimate full pipeline cost and exit",
+    )
+    parser.add_argument(
+        "--full-report",
+        action="store_true",
+        help="Include L4 full report generation (40-50 page report). Situation assessment mode only.",
+    )
+    parser.add_argument(
         "--format",
         choices=["markdown", "pdf", "docx", "all"],
         default="markdown",
         help="Output format (default: markdown)",
+    )
+
+    # Branching (for L3 iteration)
+    parser.add_argument(
+        "--branch-from",
+        metavar="RUN_ID",
+        help="Branch from an existing run's L2 outputs. Creates a new run with a fresh L3+. "
+             "Use with --stop-after to control how far the branch runs.",
+    )
+    parser.add_argument(
+        "--restart-from",
+        choices=["l3a", "l3b", "l4a", "l4b", "l4c", "l4d"],
+        default="l3a",
+        help="Which layer to restart from when branching (default: l3a). Layers before this are kept.",
     )
 
     # Misc
@@ -116,6 +162,8 @@ def build_config(args: argparse.Namespace) -> Config:
     """Build config from CLI arguments."""
     config = Config()
 
+    if args.mode:
+        config.pipeline_mode = args.mode
     if args.max_cost:
         config.max_total_cost_usd = args.max_cost
         config.warn_cost_usd = args.max_cost * 0.7
@@ -188,7 +236,13 @@ def show_run(config: Config, run_id: str) -> None:
         "l1": ("L1 Research", len(run.l1_outputs) > 0, f"{len(run.l1_outputs)} agents" if run.l1_outputs else ""),
         "l15": ("L1.5 Consolidation", run.l15_output is not None, f"{len(run.tension_points)} tension points" if run.tension_points else ""),
         "l2": ("L2 Deep Dives", len(run.l2_outputs) > 0, f"{len(run.l2_outputs)} dives" if run.l2_outputs else ""),
-        "l3": ("L3 Final Report", run.l3_executive_briefing is not None, ""),
+        "l3a": ("L3a Synthesis Draft", run.l3a_draft is not None, ""),
+        "l3b": ("L3b Final Output", run.l3b_final is not None, ""),
+        "l3c": ("L3c PDF Generation", run.l3c_pdf_path is not None, run.l3c_pdf_path or ""),
+        "l4a": ("L4a Report Architect", run.l4a_output is not None, f"{len(run.l4b_task_names)} tasks" if run.l4b_task_names else ""),
+        "l4b": ("L4b Section Writers", len(run.l4b_outputs) > 0, f"{len(run.l4b_outputs)} sections" if run.l4b_outputs else ""),
+        "l4c": ("L4c Editorial Review", run.l4c_editorial_memo is not None, ""),
+        "l4d": ("L4d Final Report", run.l4_final_report is not None, ""),
     }
 
     for layer, (name, done, details) in layers_info.items():
@@ -231,6 +285,11 @@ def print_summary(run: ResearchRun, config: Config) -> None:
                 rel = f.relative_to(run_dir)
                 console.print(f"  [dim]{rel}[/dim]")
 
+    # Show L3c PDF path if it was generated
+    if run.l3c_pdf_path:
+        pdf_full = run_dir / run.l3c_pdf_path
+        console.print(f"\n[bold green]PDF:[/bold green] {pdf_full}")
+
     # Show next step hint
     next_layer = run.next_layer()
     if next_layer:
@@ -240,8 +299,8 @@ def print_summary(run: ResearchRun, config: Config) -> None:
     else:
         console.print("\n[green]All layers complete! Final reports are ready.[/green]")
 
-        # Generate reports if requested
-        if config.output_format != "markdown":
+        # Generate reports if requested (docx only — PDF is handled by L3c)
+        if config.output_format in ("docx", "all"):
             console.print(f"\nGenerating {config.output_format} reports...")
             outputs = generate_reports(run_dir, config.output_format)
             for path in outputs:
@@ -272,7 +331,93 @@ async def main_async(args: argparse.Namespace) -> int:
     orchestrator = DeepResearchOrchestrator(config)
 
     # Determine what to run
-    if args.resume:
+    if getattr(args, "branch_from", None):
+        # Branch from existing run — copy state up to restart point, new run ID
+        import json
+        import shutil
+        from datetime import datetime as _dt
+
+        try:
+            parent = orchestrator.load_run(args.branch_from)
+        except FileNotFoundError:
+            console.print(f"[red]Run not found: {args.branch_from}[/red]")
+            return 1
+
+        # Generate readable run ID: SA_CompanyName_YYMMDDHHMM
+        mode_prefix = "SA" if parent.pipeline_mode == "situation_assessment" else "SB"
+        safe_company = parent.company_name.replace(" ", "").replace(",", "")[:20]
+        timestamp = _dt.now().strftime("%y%m%d%H%M")
+        new_id = f"{mode_prefix}_{safe_company}_{timestamp}"
+
+        # Deep copy the run state
+        state_path = config.output_dir / args.branch_from / "run_state.json"
+        with open(state_path) as f:
+            state = json.load(f)
+
+        state["id"] = new_id
+        state["updated_at"] = _dt.now().isoformat()
+
+        # Determine what to clear based on restart_from
+        restart = getattr(args, "restart_from", "l3a")
+        clear_layers = {
+            "l3a": ["l3a_draft", "l3b_final", "l4a_output", "l4a_style_guide", "l4a_outline",
+                     "l4b_task_briefs", "l4b_task_names", "l4b_task_sections", "l4b_task_models",
+                     "l4b_source_assignments", "l4b_outputs", "l4c_editorial_memo",
+                     "l4c_global_notes", "l4c_section_notes", "l4d_outputs", "l4_final_report"],
+            "l3b": ["l3b_final", "l4a_output", "l4a_style_guide", "l4a_outline",
+                     "l4b_task_briefs", "l4b_task_names", "l4b_task_sections", "l4b_task_models",
+                     "l4b_source_assignments", "l4b_outputs", "l4c_editorial_memo",
+                     "l4c_global_notes", "l4c_section_notes", "l4d_outputs", "l4_final_report"],
+            "l4a": ["l4a_output", "l4a_style_guide", "l4a_outline",
+                     "l4b_task_briefs", "l4b_task_names", "l4b_task_sections", "l4b_task_models",
+                     "l4b_source_assignments", "l4b_outputs", "l4c_editorial_memo",
+                     "l4c_global_notes", "l4c_section_notes", "l4d_outputs", "l4_final_report"],
+            "l4b": ["l4b_outputs", "l4c_editorial_memo", "l4c_global_notes",
+                     "l4c_section_notes", "l4d_outputs", "l4_final_report"],
+            "l4c": ["l4c_editorial_memo", "l4c_global_notes", "l4c_section_notes",
+                     "l4d_outputs", "l4_final_report"],
+            "l4d": ["l4d_outputs", "l4_final_report"],
+        }
+
+        # Map restart layer to the status of the previous layer
+        status_before = {
+            "l3a": "l2_complete", "l3b": "l3a_complete",
+            "l4a": "l3b_complete", "l4b": "l4a_complete",
+            "l4c": "l4b_complete", "l4d": "l4c_complete",
+        }
+
+        for field in clear_layers.get(restart, clear_layers["l3a"]):
+            if field in state:
+                if isinstance(state[field], list):
+                    state[field] = []
+                else:
+                    state[field] = None
+
+        state["status"] = status_before.get(restart, "l2_complete")
+        state["current_layer"] = LAYER_ORDER[LAYER_ORDER.index(restart) - 1] if restart != "l3a" else "l2"
+
+        # Reset cost to parent's cost at the restart point (keep L0-L2 costs)
+        # Don't reset — the budget tracker uses runner.total_cost which syncs on load
+
+        # Save new run
+        new_dir = config.output_dir / new_id
+        new_dir.mkdir(parents=True, exist_ok=True)
+        with open(new_dir / "run_state.json", "w") as f:
+            json.dump(state, f, indent=2, default=str)
+
+        console.print(Panel(
+            f"[bold]Branched: {parent.company_name}[/bold]\n"
+            f"Parent: {args.branch_from}\n"
+            f"New run: {new_id}\n"
+            f"Restarting from: {restart}\n"
+            f"Cost carried: ${state.get('total_cost_usd', 0):.2f}",
+            title="Branch",
+        ))
+
+        # Now load and resume the branched run
+        run = orchestrator.load_run(new_id)
+
+    elif args.resume:
         # Resume existing run
         try:
             run = orchestrator.load_run(args.resume)
@@ -291,10 +436,17 @@ async def main_async(args: argparse.Namespace) -> int:
 
     elif args.company:
         # New run
-        run = orchestrator.create_run(args.company, args.context)
+        run = orchestrator.create_run(
+            args.company,
+            args.context,
+            sector=getattr(args, "sector", None),
+            target_bank=getattr(args, "target_bank", None),
+            sub_sector_focus=getattr(args, "sub_sector", None),
+        )
 
+        mode_label = f" [{config.pipeline_mode}]" if config.pipeline_mode != "strategic_briefing" else ""
         console.print(Panel(
-            f"[bold]New research: {run.company_name}[/bold]\n"
+            f"[bold]New research{mode_label}: {run.company_name}[/bold]\n"
             f"Run ID: {run.id}\n"
             f"Output: {config.output_dir / run.id}",
             title="Starting",
@@ -307,9 +459,14 @@ async def main_async(args: argparse.Namespace) -> int:
 
     # Determine stop point
     if args.run_all:
-        stop_after = "l3"
+        if getattr(args, "full_report", False) and config.pipeline_mode == "situation_assessment":
+            stop_after = "l4d"
+        else:
+            stop_after = "l3c"
     elif args.stop_after:
         stop_after = args.stop_after
+    elif getattr(args, 'dry_run', False):
+        stop_after = "l05"
     else:
         # Default: run the next layer only
         next_layer = run.next_layer()
@@ -318,6 +475,19 @@ async def main_async(args: argparse.Namespace) -> int:
             show_run(config, run.id)
             return 0
         stop_after = next_layer
+
+    # Validate that stop_after isn't behind the run's current position
+    next_layer = run.next_layer()
+    if next_layer and args.resume and stop_after in LAYER_ORDER:
+        next_idx = LAYER_ORDER.index(next_layer)
+        stop_idx = LAYER_ORDER.index(stop_after)
+        if stop_idx < next_idx:
+            console.print(
+                f"[red]Error: Run is already past {stop_after} "
+                f"(next layer: {LAYER_DISPLAY_NAMES[next_layer]}). "
+                f"Cannot go backward.[/red]"
+            )
+            return 1
 
     console.print(f"[cyan]Running through: {LAYER_DISPLAY_NAMES[stop_after]}[/cyan]\n")
 
@@ -349,6 +519,46 @@ async def main_async(args: argparse.Namespace) -> int:
     console.print(f"\n[dim]Elapsed: {elapsed / 60:.1f} minutes[/dim]")
 
     print_summary(run, config)
+
+    # Dry-run cost estimation
+    if getattr(args, 'dry_run', False):
+        n_l1_agents = len(run.l1_prompts) if run.l1_prompts else 8
+        l0_cost = run.total_cost_usd
+
+        # Estimates based on observed runs
+        est_l1_per_agent = 3.50  # 3 rounds × ~$1.17/round
+        est_gap_fill = 14.0  # 2 agents × 3 rounds
+        est_l15 = 6.0  # initial + re-consolidation
+        est_l2_per_agent = 2.80  # 3 rounds × ~$0.93/round
+        n_l2_agents = min(config.max_l2_agents, max(n_l1_agents, config.min_l2_agents))
+        est_l3 = 8.0  # L3a + L3b (L3c is programmatic PDF generation, ~$0)
+        est_quality_checks = 0.20  # Haiku checks
+
+        est_l1_total = n_l1_agents * est_l1_per_agent
+        est_l2_total = n_l2_agents * est_l2_per_agent
+        est_total_low = l0_cost + est_l1_total * 0.8 + est_gap_fill * 0.8 + est_l15 * 0.8 + est_l2_total * 0.8 + est_l3 * 0.8 + est_quality_checks
+        est_total_high = l0_cost + est_l1_total * 1.3 + est_gap_fill * 1.2 + est_l15 * 1.2 + est_l2_total * 1.3 + est_l3 * 1.2 + est_quality_checks
+
+        console.print()
+        console.print(Panel(
+            f"[bold cyan]DRY RUN COST ESTIMATE: {run.company_name}[/bold cyan]\n\n"
+            f"  L0 + L0.5 (actual):  ${l0_cost:.2f}\n"
+            f"  L1 ({n_l1_agents} agents):      ${est_l1_total:.0f}  (est. ${est_l1_per_agent:.2f}/agent × 3 rounds)\n"
+            f"  Gap-fill (2 agents): ${est_gap_fill:.0f}  (est.)\n"
+            f"  L1.5 consolidation:  ${est_l15:.0f}  (initial + re-consolidation)\n"
+            f"  L2 ({n_l2_agents} agents):      ${est_l2_total:.0f}  (est. ${est_l2_per_agent:.2f}/agent × 3 rounds)\n"
+            f"  L3a + L3b synthesis: ${est_l3:.0f}\n"
+            f"  Quality checks:      ${est_quality_checks:.2f}\n"
+            f"  {'─' * 40}\n"
+            f"  [bold]ESTIMATED TOTAL:  ${est_total_low:.0f} – ${est_total_high:.0f}[/bold]\n"
+            f"  Budget:              ${config.max_total_cost_usd:.0f}  (headroom: ${config.max_total_cost_usd - est_total_high:.0f}+)\n\n"
+            f"  Agent design: {n_l1_agents} L1 agents planned → {n_l2_agents} L2 agents\n"
+            f"  Archetype: {run.company_archetype.value if run.company_archetype else 'unknown'}",
+            title="Dry Run Estimate",
+        ))
+
+        console.print(f"\nTo run the full pipeline:")
+        console.print(f"  [bold]python -m deep_research --resume {run.id} --run-all[/bold]")
 
     return 0
 

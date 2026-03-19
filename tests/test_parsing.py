@@ -12,23 +12,23 @@ def test_archetype_extraction():
 - Company archetype: **CONGLOMERATE** (multiple distinct businesses)
 - Market cap: 130M
 """
-    arch = orch._extract_archetype(l0_conglomerate)
+    arch = orch._extract_archetype_regex(l0_conglomerate)
     assert arch.value == "conglomerate", f"Expected conglomerate, got {arch.value}"
 
     l0_extractor = """
 ## 1. COMPANY IDENTITY & CLASSIFICATION
 - Company archetype — EXTRACTOR/GROWER (agriculture, mining)
 """
-    arch2 = orch._extract_archetype(l0_extractor)
+    arch2 = orch._extract_archetype_regex(l0_extractor)
     assert arch2.value == "extractor_grower", f"Expected extractor_grower, got {arch2.value}"
 
     l0_saas = """
 ## 1. COMPANY IDENTITY
 - archetype: SAAS/SOFTWARE (sells software or digital services)
 """
-    arch3 = orch._extract_archetype(l0_saas)
+    arch3 = orch._extract_archetype_regex(l0_saas)
     assert arch3.value == "saas_software", f"Expected saas_software, got {arch3.value}"
-    print("Archetype extraction: PASSED")
+    print("Archetype extraction (regex fallback): PASSED")
 
 
 def test_agent_prompt_parsing():
@@ -118,7 +118,7 @@ def test_tension_point_parsing():
 **LAYER 2 RESEARCH QUESTION:** Who has successfully integrated forward?
 """
 
-    points = orch._parse_tension_points(l15_output)
+    points = orch._parse_tension_points_regex(l15_output)
     assert len(points) == 3, f"Expected 3 tension points, got {len(points)}"
     assert points[0].title == "The Land Value Problem"
     assert "STRUCTURAL" in points[0].category.upper()
@@ -187,10 +187,116 @@ def test_l2_prompt_parsing():
     print("L2 prompt parsing: PASSED")
 
 
+def test_yield_verdict_parsing():
+    orch = DeepResearchOrchestrator(Config())
+
+    # Test HIGHLIGHT verdict
+    output_highlight = """
+## 1. EVIDENCE FOR THE HYPOTHESIS
+Strong evidence found...
+
+## 9. YIELD ASSESSMENT
+- VERDICT: HIGHLIGHT
+- NOVEL FINDING: Discovered a previously unreported $2.9B service contract NPV.
+- CONFIDENCE DELTA: UP significantly — from Medium to High.
+- EVIDENCE STRENGTH: DOCUMENTED
+"""
+    assert orch._parse_yield_verdict(output_highlight) == "HIGHLIGHT"
+
+    # Test DROP verdict
+    output_drop = """
+## 1. EVIDENCE FOR THE HYPOTHESIS
+Limited evidence...
+
+## 9. YIELD ASSESSMENT
+- VERDICT: DROP
+- NOVEL FINDING: Nothing beyond what L1.5 already identified.
+- CONFIDENCE DELTA: UNCHANGED
+- EVIDENCE STRENGTH: ANECDOTAL
+"""
+    assert orch._parse_yield_verdict(output_drop) == "DROP"
+
+    # Test KEEP verdict
+    output_keep = """
+Some research output...
+
+## YIELD ASSESSMENT
+- VERDICT: KEEP
+- NOVEL FINDING: Found two comparable transactions not previously identified.
+- CONFIDENCE DELTA: UP slightly
+- EVIDENCE STRENGTH: CIRCUMSTANTIAL
+"""
+    assert orch._parse_yield_verdict(output_keep) == "KEEP"
+
+    # Test missing verdict
+    output_none = "Just some random output with no yield assessment."
+    assert orch._parse_yield_verdict(output_none) == ""
+
+    print("Yield verdict parsing: PASSED")
+
+
+def test_l3_input_assembly():
+    """Test that L3 input assembly includes L0, filters DROPs, and tags HIGHLIGHTs."""
+    from deep_research.context_manager import assemble_l3_input
+    from deep_research.models import ResearchRun, AgentOutput
+
+    run = ResearchRun(
+        id="test_run",
+        company_name="Test Corp",
+        l0_output="Test Corp is a manufacturer of widgets. Revenue: $500M.",
+        l15_output="## SITUATION MAP\nTest Corp overview...\n\n## TENSION POINTS\n...",
+        l2_outputs=[
+            AgentOutput(
+                agent_name="Hidden Value Analysis",
+                agent_type="l2",
+                prompt="p1",
+                raw_output="Found significant hidden value...",
+                yield_verdict="HIGHLIGHT",
+            ),
+            AgentOutput(
+                agent_name="Competitive Moat",
+                agent_type="l2",
+                prompt="p2",
+                raw_output="Standard competitive analysis...",
+                yield_verdict="KEEP",
+            ),
+            AgentOutput(
+                agent_name="Regulatory Risk",
+                agent_type="l2",
+                prompt="p3",
+                raw_output="Nothing new found...",
+                yield_verdict="DROP",
+            ),
+        ],
+    )
+
+    result = assemble_l3_input(run)
+
+    # L0 should be included
+    assert "L0 COMPANY PROFILE" in result
+    assert "manufacturer of widgets" in result
+
+    # L1.5 should be included
+    assert "L1.5 CONSOLIDATION" in result
+
+    # HIGHLIGHT and KEEP should be included
+    assert "HIDDEN VALUE ANALYSIS" in result.upper()
+    assert "[HIGHLIGHT]" in result
+    assert "COMPETITIVE MOAT" in result.upper()
+
+    # DROP should be excluded
+    assert "REGULATORY RISK" not in result.upper()
+    assert "Nothing new found" not in result
+
+    print("L3 input assembly: PASSED")
+
+
 if __name__ == "__main__":
     test_archetype_extraction()
     test_agent_prompt_parsing()
     test_tension_point_parsing()
     test_extract_field()
     test_l2_prompt_parsing()
+    test_yield_verdict_parsing()
+    test_l3_input_assembly()
     print("\n=== ALL PARSING TESTS PASSED ===")

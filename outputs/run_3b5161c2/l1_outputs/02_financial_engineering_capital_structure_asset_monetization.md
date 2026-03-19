@@ -1,0 +1,1 @@
+[ERROR: Research task failed: {'type': 'error', 'error': {'details': None, 'type': 'api_error', 'message': 'Internal server error'}, 'request_id': 'req_011CZ1r3cmcm1ACcHMa9vygg'}]

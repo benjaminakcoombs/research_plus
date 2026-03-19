@@ -26,7 +26,6 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("anthropic").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
-RUN_ID = "run_7070d661"
 N_CONTRARIAN_AGENTS = 3
 
 CONTRARIAN_GENERATION_PROMPT = """You are a research architect generating ONLY contrarian, lateral, and genuinely surprising deep research prompts for {COMPANY_NAME}.
@@ -146,11 +145,11 @@ def parse_l2_prompts(gen_output: str) -> tuple[list[str], list[str]]:
     return prompts, names
 
 
-async def main():
+async def main(run_id: str, n_agents: int = N_CONTRARIAN_AGENTS) -> None:
     config = Config()
-    run = ResearchRun.load(config.output_dir, RUN_ID)
+    run = ResearchRun.load(config.output_dir, run_id)
 
-    console.print(f"\n[bold]Adding {N_CONTRARIAN_AGENTS} contrarian L2 agents to {RUN_ID}[/bold]")
+    console.print(f"\n[bold]Adding {n_agents} contrarian L2 agents to {run_id}[/bold]")
     console.print(f"Existing L2 agents: {len(run.l2_outputs)}")
     console.print(f"Current cost: ${run.total_cost_usd:.2f}\n")
 
@@ -166,7 +165,7 @@ async def main():
     gen_prompt = CONTRARIAN_GENERATION_PROMPT.replace(
         "{COMPANY_NAME}", run.company_name
     ).replace(
-        "{N_AGENTS}", str(N_CONTRARIAN_AGENTS)
+        "{N_AGENTS}", str(n_agents)
     ).replace(
         "{L15_OUTPUT}", run.l15_output or ""
     ).replace(
@@ -253,56 +252,72 @@ async def main():
         run.save(config.output_dir)
         logger.info(f"  [{task_id}] Saved to disk ({agent_num} total L2 agents)")
 
-    # Step 3: Re-run L3 synthesis with expanded corpus
-    console.print(f"\n[bold]Re-running L3 synthesis with {len(run.l2_outputs)} L2 agents...[/bold]\n")
+    # Step 3: Re-run L3 synthesis (L3a + L3b) with expanded corpus
+    console.print(f"\n[bold]Re-running L3a synthesis with {len(run.l2_outputs)} L2 agents...[/bold]\n")
 
     prompt_builder = PromptBuilder(config)
-    l3_prompt = prompt_builder.build_l3(
+
+    # L3a: synthesis draft
+    l3a_prompt = prompt_builder.build_l3a(
         company_name=run.company_name,
         run=run,
     )
+    token_count = count_tokens(l3a_prompt)
+    logger.info(f"[L3a] Input size: {token_count} tokens")
 
-    token_count = count_tokens(l3_prompt)
-    logger.info(f"[L3] Input size: {token_count} tokens")
-
-    text, l3_costs = await runner.run_synthesis(
-        l3_prompt,
-        task_id="l3_synthesis_v2",
+    l3a_text, l3a_costs = await runner.run_synthesis(
+        l3a_prompt,
+        task_id="l3a_synthesis_v2",
         model=config.synthesis_model,
     )
-    run.cost_records.extend(l3_costs)
+    run.cost_records.extend(l3a_costs)
+    run.total_cost_usd = runner.total_cost
+    run.l3a_draft = l3a_text
+    run.save(config.output_dir)
+
+    console.print(f"\n[bold]Re-running L3b refinement...[/bold]\n")
+
+    # L3b: refinement to final output
+    l3b_prompt = prompt_builder.build_l3b(
+        company_name=run.company_name,
+        run=run,
+        l3a_output=l3a_text,
+    )
+    token_count = count_tokens(l3b_prompt)
+    logger.info(f"[L3b] Input size: {token_count} tokens")
+
+    l3b_text, l3b_costs = await runner.run_synthesis(
+        l3b_prompt,
+        task_id="l3b_refinement_v2",
+        model=config.synthesis_model,
+    )
+    run.cost_records.extend(l3b_costs)
     run.total_cost_usd = runner.total_cost
 
     checker = QualityChecker()
-    qr = checker.check_l3(text)
+    qr = checker.check_l3(l3b_text, pipeline_mode=config.pipeline_mode)
     run.quality_reports.append(qr)
 
-    # Split into executive briefing and full report
-    # Reuse orchestrator's split logic
-    patterns = [
-        r"(?:^|\n)#{1,2}\s*DELIVERABLE\s*2",
-        r"(?:^|\n)#{1,2}\s*FULL\s+RESEARCH\s+COMPENDIUM",
-        r"(?:^|\n)#{1,2}\s*RESEARCH\s+COMPENDIUM",
-    ]
-    briefing, report = text, ""
-    for pattern in patterns:
-        match = re.search(pattern, text, re.IGNORECASE)
-        if match:
-            briefing = text[:match.start()].strip()
-            report = text[match.start():].strip()
-            break
-
-    run.l3_executive_briefing = briefing
-    run.l3_full_report = report
+    run.l3b_final = l3b_text
     run.status = "complete"
     run.save(config.output_dir)
 
     console.print(f"\n[bold green]Done![/bold green]")
-    console.print(f"Total L2 agents: {len(run.l2_outputs)} (12 original + {len(prompts)} contrarian)")
+    console.print(f"Total L2 agents: {len(run.l2_outputs)} ({len(prompts)} contrarian added)")
     console.print(f"L3 quality: {'PASS' if qr.passed else 'FAIL'} ({qr.pass_rate:.0%})")
     console.print(f"Total cost: ${run.total_cost_usd:.2f}")
-    console.print(f"Output: {config.output_dir / RUN_ID}")
+    console.print(f"Output: {config.output_dir / run_id}")
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    import argparse
+    parser = argparse.ArgumentParser(
+        description="Add contrarian L2 agents to an existing run and re-run L3."
+    )
+    parser.add_argument("run_id", help="The run ID to extend (e.g. run_7070d661)")
+    parser.add_argument(
+        "--count", type=int, default=N_CONTRARIAN_AGENTS,
+        help=f"Number of contrarian agents to add (default: {N_CONTRARIAN_AGENTS})",
+    )
+    args = parser.parse_args()
+    asyncio.run(main(args.run_id, n_agents=args.count))

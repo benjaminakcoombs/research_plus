@@ -1,0 +1,13 @@
+## VII. How We Work
+
+This Situation Assessment was produced entirely from publicly available data using a structured analytical methodology. The underlying research synthesized approximately 200 sources across SEC filings, DOE and DOD program databases, Oklahoma state geological surveys, patent filings, hydrometallurgical and transition alumina literature, trade press, regulatory proceedings, investor databases, and corporate disclosures. The analytical approach is best described as parallel structured research: multiple independent workstreams investigated distinct dimensions of the company — process technology, feedstock mineralogy, competitive positioning, capital formation, buyer dynamics, regulatory environment, and transaction mechanics — simultaneously. Findings were cross-validated across source types before inclusion, with each workstream's conclusions tested against evidence from the others. The result is the unified strategic narrative presented in the preceding sections, where a geological survey citation informs an alumina pricing assumption, which informs a valuation scenario, which informs a buyer thesis. The integration is the product.
+
+The same analytical infrastructure that produced this report can be applied to any company, sector, or transaction situation. Pokee builds Deep Analysis reports — concise, thesis-driven assessments suitable for early-stage screening — as well as full Situation Assessments at the depth represented here. For teams with specific diligence questions already defined, we produce targeted custom research on individual topics: feedstock characterization, regulatory pathway mapping, buyer universe development, comparable transaction analysis, or any other dimension where structured public-source research can accelerate a workstream. We also build presentation materials, financial models, and research workflow infrastructure for advisory teams managing multiple concurrent mandates.
+
+For questions about this analysis or to discuss how the methodology applies to a current mandate, please contact **Ben Coombs** at **ben@pokee.ai**. We welcome the opportunity to discuss how this analysis applies to your current mandates.
+
+---
+
+**Source Notes**
+
+No external sources are cited in this section. All source references supporting the analytical findings described herein are documented in the preceding sections and consolidated in the Source Index & Methodology appendix.

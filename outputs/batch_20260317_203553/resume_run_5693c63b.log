@@ -1,0 +1,23 @@
+[20:58:21] INFO     Loaded run run_5693c63b (status: l05_complete)                                                                                                                                                   
+           INFO     Syncing pipeline_mode from run: situation_assessment                                                                                                                                             
+╭───────────────────────────────────────────────────────────────────────────────────────────────────── Resume ──────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Resuming: Fervo Energy                                                                                                                                                                                            │
+│ Run ID: run_5693c63b                                                                                                                                                                                              │
+│ Current status: l05_complete                                                                                                                                                                                      │
+│ Cost so far: $4.29                                                                                                                                                                                                │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+Running through: L3b: Final Refinement
+
+           INFO                                                                                                                                                                                                      
+                    ============================================================                                                                                                                                     
+           INFO       L1: Parallel Research                                                                                                                                                                          
+           INFO     ============================================================                                                                                                                                     
+           INFO     [L1] Running 8 agents (max 4 concurrent)...                                                                                                                                                      
+           INFO       [l1_agent_01] Starting: BUYER UNIVERSE & PRECEDENT TRANSACTIONS                                                                                                                                
+           INFO       [l1_agent_01] Research round 1/3                                                                                                                                                               
+           INFO       [l1_agent_02] Starting: OWNERSHIP, CAPITAL STRUCTURE & DEAL MECHANICS                                                                                                                          
+           INFO       [l1_agent_02] Research round 1/3                                                                                                                                                               
+           INFO       [l1_agent_03] Starting: VALUATION ARCHITECTURE & FINANCIAL MODELING                                                                                                                            
+           INFO       [l1_agent_03] Research round 1/3                                                                                                                                                               
+           INFO       [l1_agent_04] Starting: CAPE STATION EXECUTION & TECHNICAL DILIGENCE                                                                                                                           
+           INFO       [l1_agent_04] Research round 1/3                                                                                                                                                               

@@ -1,0 +1,42 @@
+[
+  {
+    "task_id": "l0_profile_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 345648,
+    "output_tokens": 12275,
+    "thinking_tokens": 0,
+    "search_count": 11,
+    "estimated_cost_usd": 1.3311,
+    "timestamp": "2026-03-17T19:23:11.037276"
+  },
+  {
+    "task_id": "l0_profile_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 91565,
+    "output_tokens": 13208,
+    "thinking_tokens": 0,
+    "search_count": 4,
+    "estimated_cost_usd": 0.5128,
+    "timestamp": "2026-03-17T19:28:25.634670"
+  },
+  {
+    "task_id": "l0_profile_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 136348,
+    "output_tokens": 13848,
+    "thinking_tokens": 0,
+    "search_count": 4,
+    "estimated_cost_usd": 0.6568,
+    "timestamp": "2026-03-17T19:33:54.427605"
+  },
+  {
+    "task_id": "l05_design",
+    "model": "claude-opus-4-6",
+    "input_tokens": 15287,
+    "output_tokens": 19428,
+    "thinking_tokens": 0,
+    "search_count": 0,
+    "estimated_cost_usd": 1.6864,
+    "timestamp": "2026-03-17T19:41:30.944822"
+  }
+]

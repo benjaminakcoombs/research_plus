@@ -1,7 +1,14 @@
-"""Re-run only the failed L1 agents and slot results back into the run."""
+"""Re-run only the failed L1 agents and slot results back into the run.
 
+Usage:
+    python rerun_failed.py <run_id>
+
+Example:
+    python rerun_failed.py run_7070d661
+"""
+
+import argparse
 import asyncio
-import json
 import logging
 import time
 
@@ -25,9 +32,9 @@ logging.getLogger("anthropic").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
-async def main():
+async def main(run_id: str) -> None:
     config = Config()
-    run = ResearchRun.load(config.output_dir, "run_7070d661")
+    run = ResearchRun.load(config.output_dir, run_id)
 
     # Find failed agents
     failed_indices = [
@@ -39,6 +46,7 @@ async def main():
         console.print("[green]No failed agents to re-run![/green]")
         return
 
+    n_total = len(run.l1_outputs)
     console.print(f"Re-running {len(failed_indices)} failed agents: {[i+1 for i in failed_indices]}")
 
     runner = ResearchRunner(config)
@@ -50,14 +58,16 @@ async def main():
         name = run.l1_prompt_names[idx]
         task_id = f"l1_agent_{idx + 1:02d}"
 
-        console.print(f"\n[cyan]Starting: {name} ({idx + 1}/10)[/cyan]")
+        console.print(f"\n[cyan]Starting: {name} ({idx + 1}/{n_total})[/cyan]")
         start = time.time()
 
+        # Track costs explicitly to avoid scoping bugs
+        agent_costs = []
         try:
-            text, costs = await runner.run_research(prompt=prompt, task_id=task_id)
+            text, agent_costs = await runner.run_research(prompt=prompt, task_id=task_id)
             elapsed = time.time() - start
-            total_cost = sum(c.estimated_cost_usd for c in costs)
-            search_count = sum(c.search_count for c in costs)
+            total_cost = sum(c.estimated_cost_usd for c in agent_costs)
+            search_count = sum(c.search_count for c in agent_costs)
 
             console.print(
                 f"[green]Complete: {name} "
@@ -69,7 +79,7 @@ async def main():
                 agent_type="l1",
                 prompt=prompt,
                 raw_output=text,
-                token_count=sum(c.output_tokens for c in costs),
+                token_count=sum(c.output_tokens for c in agent_costs),
                 search_count=search_count,
                 execution_time_seconds=elapsed,
                 cost_usd=total_cost,
@@ -84,6 +94,7 @@ async def main():
                 raw_output=f"[ERROR: Research task failed: {e}]",
                 execution_time_seconds=elapsed,
             )
+            agent_costs = []  # No costs on failure
 
         # Quality check
         qr = checker.check_l1(output.raw_output, output.agent_name)
@@ -92,10 +103,10 @@ async def main():
 
         # Replace in run
         run.l1_outputs[idx] = output
-        run.cost_records.extend(costs if 'costs' in dir() else [])
+        run.cost_records.extend(agent_costs)  # Always defined — no scoping bug
         run.total_cost_usd = runner.total_cost
         run.save(config.output_dir)
-        console.print(f"[dim]Saved to disk[/dim]")
+        console.print("[dim]Saved to disk[/dim]")
 
         # Cooldown before next
         if idx != failed_indices[-1]:
@@ -103,9 +114,12 @@ async def main():
             await asyncio.sleep(10)
 
     passed = sum(1 for o in run.l1_outputs if not o.raw_output.startswith("[ERROR"))
-    console.print(f"\n[bold]Result: {passed}/10 agents now succeeded[/bold]")
+    console.print(f"\n[bold]Result: {passed}/{n_total} agents now succeeded[/bold]")
     console.print(f"Total cost: ${run.total_cost_usd:.2f}")
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    parser = argparse.ArgumentParser(description="Re-run failed L1 agents in a research run.")
+    parser.add_argument("run_id", help="The run ID to reprocess (e.g. run_7070d661)")
+    args = parser.parse_args()
+    asyncio.run(main(args.run_id))

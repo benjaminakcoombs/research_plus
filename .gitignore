@@ -1,0 +1,22 @@
+# Environment and secrets (never commit)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Optional: uncomment to exclude run outputs from future commits
+# outputs/

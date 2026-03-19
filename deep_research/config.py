@@ -18,8 +18,12 @@ PRICING = {
         "output_per_1k": 0.015,
     },
     "claude-opus-4-6": {
-        "input_per_1k": 0.015,
-        "output_per_1k": 0.075,
+        "input_per_1k": 0.005,
+        "output_per_1k": 0.025,
+    },
+    "claude-haiku-4-5-20251001": {
+        "input_per_1k": 0.0008,
+        "output_per_1k": 0.004,
     },
 }
 
@@ -31,6 +35,9 @@ SEARCH_COST_ESTIMATE = 0.01
 class Config:
     """Configuration for a deep research run."""
 
+    # Pipeline mode: "strategic_briefing" (exec/consulting) or "situation_assessment" (banking/deal)
+    pipeline_mode: str = "strategic_briefing"
+
     # API
     anthropic_api_key: str = field(
         default_factory=lambda: os.environ.get("ANTHROPIC_API_KEY", "")
@@ -41,16 +48,19 @@ class Config:
     synthesis_model: str = "claude-opus-4-6"  # For reasoning tasks
 
     # Research parameters
-    max_search_rounds: int = 1  # Single round avoids multi-turn rate limit issues
-    searches_per_round: int = 20  # More searches per round to compensate
-    max_concurrent_tasks: int = 2  # Parallel task limit (API rate limits)
+    max_search_rounds: int = 3  # Iterative: search → identify gaps → search again
+    searches_per_round: int = 20  # Max web searches per round
+    max_concurrent_tasks: int = 4  # Parallel task limit (API rate limits)
 
     # Thinking budgets
     research_thinking_budget: int = 10000
     synthesis_thinking_budget: int = 32000
 
     # Max output tokens (must be > thinking budget)
-    research_max_tokens: int = 16000
+    # With extended thinking enabled, max_tokens is the TOTAL budget (thinking + text).
+    # At 16K with 10K thinking budget, the model only gets ~6K tokens for text output.
+    # Increasing to 32K gives ~22K text tokens after thinking — enough for thorough analysis.
+    research_max_tokens: int = 32000
     synthesis_max_tokens: int = 64000
 
     # Context window
@@ -63,19 +73,24 @@ class Config:
     max_l2_agents: int = 8
 
     # Gap-fill (L1.5 re-run after supplementary research)
+    # Gap-fill agents investigate blind spots identified by L1.5 consolidation,
+    # typically surfacing cross-industry analogues and structural insights that
+    # the initial L1 agents miss. High ROI per dollar spent.
     enable_gap_fill: bool = True
     max_gap_fill_agents: int = 2
 
     # Cost controls
-    max_total_cost_usd: float = 150.0  # Hard stop
-    warn_cost_usd: float = 80.0  # Log warning
+    # With Opus pricing corrected (was 3x overstated), a full L0→L4d run costs ~$100-130 actual.
+    # Budget set to $200 to give headroom for quality retries and L4 full report generation.
+    max_total_cost_usd: float = 200.0  # Hard stop
+    warn_cost_usd: float = 150.0  # Log warning
 
     # Paths
     project_root: Path = field(default_factory=lambda: Path(__file__).parent.parent)
 
     @property
     def prompts_dir(self) -> Path:
-        return self.project_root / "prompts"
+        return self.project_root / "prompts" / self.pipeline_mode
 
     @property
     def calibration_dir(self) -> Path:

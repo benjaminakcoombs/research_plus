@@ -1,0 +1,91 @@
+[20:05:54] INFO     Created new run: run_5693c63b                                                                                                                                                                    
+           INFO     Output directory: /Users/benjamincoombs/Workspace/code/research-banking-boutique/outputs/run_5693c63b                                                                                            
+╭──────────────────────────────────────────────────────────────────────────────────────────────────── Starting ─────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ New research : Fervo Energy                                                                                                                                                                                       │
+│ Run ID: run_5693c63b                                                                                                                                                                                              │
+│ Output: /Users/benjamincoombs/Workspace/code/research-banking-boutique/outputs/run_5693c63b                                                                                                                       │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+Running through: L0.5: Agent Design
+
+           INFO                                                                                                                                                                                                      
+                    ============================================================                                                                                                                                     
+           INFO       L0: Company Profile                                                                                                                                                                            
+           INFO     ============================================================                                                                                                                                     
+           INFO     [L0] Profiling Fervo Energy...                                                                                                                                                                   
+           INFO       [l0_profile] Research round 1/3                                                                                                                                                                
+[20:11:10] INFO       [l0_profile_r1] Cost: $1.186 | Tokens: 294703in/13467out | Searches: 10 | stop: end_turn | Running total: $1.19                                                                                
+           INFO       [l0_profile] Research round 2/3                                                                                                                                                                
+[20:17:05] INFO       [l0_profile_r2] Cost: $0.638 | Tokens: 125363in/14776out | Searches: 4 | stop: end_turn | Running total: $1.82                                                                                 
+           INFO       [l0_profile] Research round 3/3                                                                                                                                                                
+[20:22:59] INFO       [l0_profile_r3] Cost: $0.746 | Tokens: 158552in/15353out | Searches: 4 | stop: end_turn | Running total: $2.57                                                                                 
+           INFO     L0 quality check passed (91%)                                                                                                                                                                    
+           INFO     [L0] Detected archetype: CompanyArchetype.FINANCIAL_SERVICES                                                                                                                                     
+           INFO       Saved to: /Users/benjamincoombs/Workspace/code/research-banking-boutique/outputs/run_5693c63b                                                                                                  
+           INFO       Running cost: $2.57                                                                                                                                                                            
+           INFO                                                                                                                                                                                                      
+                    ============================================================                                                                                                                                     
+           INFO       L0.5: Agent Design                                                                                                                                                                             
+           INFO     ============================================================                                                                                                                                     
+           INFO     [L0.5] Designing research agents...                                                                                                                                                              
+           INFO       [l05_design] Running synthesis (claude-opus-4-6)                                                                                                                                               
+[20:30:41] INFO       [l05_design] Cost: $1.716 | Tokens: 16169in/19649out | Searches: 0 | stop: end_turn | Running total: $4.29                                                                                     
+           INFO     L0.5 quality check passed (100%)                                                                                                                                                                 
+           INFO     Parsed 8 agent prompts from L0.5 output                                                                                                                                                          
+           INFO     [L0.5] Generated 8 L1 agent prompts                                                                                                                                                              
+           INFO       Agent 1: BUYER UNIVERSE & PRECEDENT TRANSACTIONS                                                                                                                                               
+           INFO       Agent 2: OWNERSHIP, CAPITAL STRUCTURE & DEAL MECHANICS                                                                                                                                         
+           INFO       Agent 3: VALUATION ARCHITECTURE & FINANCIAL MODELING                                                                                                                                           
+           INFO       Agent 4: CAPE STATION EXECUTION & TECHNICAL DILIGENCE                                                                                                                                          
+           INFO       Agent 5: IPO PROCESS DYNAMICS & PUBLIC MARKET READINESS                                                                                                                                        
+           INFO       Agent 6: REGULATORY, POLICY & PERMITTING DYNAMICS                                                                                                                                              
+           INFO       Agent 7: DATA CENTER DEMAND CURVE, CTT PLATFORM VALUE & CROSS-INDUSTRY ANALOGUES                                                                                                               
+           INFO       Agent 8: COMPETITIVE TECHNOLOGY LANDSCAPE & NON-OBVIOUS ACQUIRER CATEGORIES                                                                                                                    
+           INFO       Saved to: /Users/benjamincoombs/Workspace/code/research-banking-boutique/outputs/run_5693c63b                                                                                                  
+           INFO       Running cost: $4.29                                                                                                                                                                            
+
+Elapsed: 24.8 minutes
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────────── Progress ─────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Layer complete: l05_complete                                                                                                                                                                                      │
+│                                                                                                                                                                                                                   │
+│ Company: Fervo Energy                                                                                                                                                                                             │
+│ Run ID: run_5693c63b                                                                                                                                                                                              │
+│ Cost so far: $4.29                                                                                                                                                                                                │
+│ Output: /Users/benjamincoombs/Workspace/code/research-banking-boutique/outputs/run_5693c63b                                                                                                                       │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+Saved files:
+  l05_agent_design.md
+  l0_profile.md
+  l1_prompts/01_buyer_universe_precedent_transactions.md
+  l1_prompts/02_ownership_capital_structure_deal_mechanics.md
+  l1_prompts/03_valuation_architecture_financial_modeling.md
+  l1_prompts/04_cape_station_execution_technical_diligence.md
+  l1_prompts/05_ipo_process_dynamics_public_market_readiness.md
+  l1_prompts/06_regulatory_policy_permitting_dynamics.md
+  l1_prompts/07_data_center_demand_curve_ctt_platform_value_cross-industry_a.md
+  l1_prompts/08_competitive_technology_landscape_non-obvious_acquirer_catego.md
+
+Next step: python -m deep_research --resume run_5693c63b --stop-after l1
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────── Dry Run Estimate ─────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ DRY RUN COST ESTIMATE: Fervo Energy                                                                                                                                                                               │
+│                                                                                                                                                                                                                   │
+│   L0 + L0.5 (actual):  $4.29                                                                                                                                                                                      │
+│   L1 (8 agents):      $28  (est. $3.50/agent × 3 rounds)                                                                                                                                                          │
+│   Gap-fill (2 agents): $14  (est.)                                                                                                                                                                                │
+│   L1.5 consolidation:  $6  (initial + re-consolidation)                                                                                                                                                           │
+│   L2 (8 agents):      $22  (est. $2.80/agent × 3 rounds)                                                                                                                                                          │
+│   L3a + L3b synthesis: $8                                                                                                                                                                                         │
+│   Quality checks:      $0.20                                                                                                                                                                                      │
+│   ────────────────────────────────────────                                                                                                                                                                        │
+│   ESTIMATED TOTAL:  $67 – $104                                                                                                                                                                                    │
+│   Budget:              $150  (headroom: $46+)                                                                                                                                                                     │
+│                                                                                                                                                                                                                   │
+│   Agent design: 8 L1 agents planned → 8 L2 agents                                                                                                                                                                 │
+│   Archetype: financial_services                                                                                                                                                                                   │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+To run the full pipeline:
+  python -m deep_research --resume run_5693c63b --run-all
+  2026-03-17 20:30:42

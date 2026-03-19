@@ -97,6 +97,9 @@ def generate_docx(markdown_path: Path, output_path: Path | None = None) -> Path 
 def generate_reports(run_dir: Path, fmt: str = "markdown") -> list[Path]:
     """Generate reports in the requested format from a completed run directory.
 
+    For PDF output, prefers the styled ReportLab generator (pdf_generator.py)
+    over pandoc, falling back to pandoc if reportlab is not installed.
+
     Args:
         run_dir: Path to the run output directory.
         fmt: Output format — "markdown", "pdf", "docx", or "all".
@@ -107,15 +110,18 @@ def generate_reports(run_dir: Path, fmt: str = "markdown") -> list[Path]:
     outputs = []
 
     # The markdown files are already saved by the orchestrator
-    briefing_md = run_dir / "l3_executive_briefing.md"
-    report_md = run_dir / "l3_full_report.md"
+    # Look for the final output — could be deep_analysis (SA mode) or executive_briefing
+    final_candidates = [
+        run_dir / "l3_deep_analysis.md",
+        run_dir / "l3_executive_briefing.md",
+    ]
 
-    for md_path in [briefing_md, report_md]:
+    for md_path in final_candidates:
         if md_path.exists():
             outputs.append(md_path)
 
             if fmt in ("pdf", "all"):
-                pdf = generate_pdf(md_path)
+                pdf = _generate_styled_pdf(md_path)
                 if pdf:
                     outputs.append(pdf)
 
@@ -125,6 +131,25 @@ def generate_reports(run_dir: Path, fmt: str = "markdown") -> list[Path]:
                     outputs.append(docx)
 
     return outputs
+
+
+def _generate_styled_pdf(md_path: Path) -> Path | None:
+    """Generate a styled PDF using ReportLab, falling back to pandoc.
+
+    Tries the house-style ReportLab generator first (produces the branded
+    Pokee AI Deep Analysis format). Falls back to basic pandoc if reportlab
+    is not available.
+    """
+    try:
+        from .pdf_generator import build_pdf as reportlab_build_pdf
+        output_path = md_path.with_suffix(".pdf")
+        return reportlab_build_pdf(md_path, output_path)
+    except ImportError:
+        logger.info("reportlab not available, falling back to pandoc for PDF.")
+        return generate_pdf(md_path)
+    except Exception as e:
+        logger.warning(f"ReportLab PDF generation failed: {e}. Falling back to pandoc.")
+        return generate_pdf(md_path)
 
 
 def _check_pandoc() -> bool:
