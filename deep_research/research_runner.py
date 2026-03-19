@@ -168,8 +168,18 @@ class ResearchRunner:
         prompt: str,
         task_id: str = "research",
         max_rounds: int | None = None,
+        round_callback=None,
     ) -> tuple[str, list[CostRecord]]:
         """Run an iterative deep research task with web search.
+
+        Args:
+            round_callback: Optional async callback invoked after each round
+                (except the last). Signature: async (round_num, round_text) -> str | None
+                - Return None to use the default continuation prompt.
+                - Return a string to use it as a custom continuation prompt.
+                - Return "__STOP__" to stop early (output is sufficient).
+                The orchestrator uses this to inject Opus critique feedback
+                between rounds, replacing the generic gap-identification prompt.
 
         Returns (output_text, cost_records).
         """
@@ -265,6 +275,21 @@ class ResearchRunner:
             if round_num == max_rounds - 1:
                 break
 
+            # ── Round callback hook ──────────────────────────────────────
+            # If a callback is provided (e.g. Opus critique), invoke it to
+            # decide whether to continue and what continuation prompt to use.
+            custom_continuation = None
+            if round_callback is not None:
+                callback_result = await round_callback(round_num, text)
+                if callback_result == "__STOP__":
+                    logger.info(
+                        f"  [{task_id}] Round callback signaled early stop "
+                        f"after round {round_num + 1} (output sufficient)"
+                    )
+                    break
+                elif callback_result is not None:
+                    custom_continuation = callback_result
+
             # Always continue to the next round for iterative deepening,
             # regardless of stop_reason. The model may have hit max_tokens
             # (truncated output) or end_turn (clean finish) — in both cases,
@@ -295,7 +320,14 @@ class ResearchRunner:
 
             messages.append({"role": "assistant", "content": slim_content})
 
-            if response.stop_reason == "max_tokens":
+            # ── Continuation prompt ──────────────────────────────────────
+            # Priority: custom_continuation (from callback) > max_tokens > default
+            if custom_continuation is not None:
+                messages.append({
+                    "role": "user",
+                    "content": custom_continuation,
+                })
+            elif response.stop_reason == "max_tokens":
                 # Model was truncated — ask it to continue and fill gaps
                 messages.append({
                     "role": "user",

@@ -9,7 +9,99 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .research_runner import ResearchRunner
 
-from .models import QualityReport
+from .models import Critique, QualityReport
+
+OPUS_MODEL = "claude-opus-4-6"
+
+# ── Opus critic prompt templates ─────────────────────────────────────────
+
+_L1_CRITIQUE_PROMPT = """You are a senior investment banking MD reviewing a junior analyst's \
+first-pass research output. Your job is to identify specific gaps and weak points — \
+NOT to score or grade the output.
+
+RESEARCH AGENT: {agent_name}
+
+FULL OUTPUT:
+{output}
+
+─────────────────────────────────────────────────────────────────────────
+
+Answer each section. Be concrete and specific — never say "needs more detail." \
+Say exactly WHAT detail is missing and WHY it matters for a deal team.
+
+## SUFFICIENT
+Is this output usable as a working first draft? Say YES if it contains at least 3 \
+specific, evidence-backed findings relevant to the agent's mandate. Say NO only if \
+the output is substantially vague, off-topic, or makes major claims with zero \
+supporting evidence.
+A missing angle or unexplored follow-up does NOT make it insufficient — that's \
+what the next research round is for.
+Answer: YES or NO
+
+## GAPS
+What specific questions does this research leave unanswered that a deal team \
+would need answered? Be concrete: "What is the customer concentration among top \
+5 accounts?" not "needs more customer detail."
+List 0-5 items (one per line, prefixed with "- "). If SUFFICIENT=YES and gaps \
+are minor, list 0-2.
+
+## WEAK_CLAIMS
+Which specific claims in the output are stated confidently but lack cited evidence? \
+Quote the claim verbatim, then state what evidence would support it.
+List 0-3 items (one per line, prefixed with "- ").
+
+## MISSING_CONTEXT
+What market, competitive, or regulatory context is absent that would change the \
+interpretation of the findings?
+List 0-3 items (one per line, prefixed with "- ").
+
+## FOLLOW_UP_QUERIES
+If you listed gaps or weak claims above, what specific web search queries would \
+find the answers? Write these as actual search strings someone would type.
+List 0-5 items (one per line, prefixed with "- ").
+
+## SUMMARY
+One sentence: what is the single most important thing this research is missing?"""
+
+_L2_CRITIQUE_PROMPT = """You are a senior investment banking MD reviewing a deep-dive \
+investigation output. Your job is to identify specific gaps — NOT to score it.
+
+RESEARCH AGENT: {agent_name}
+
+FULL OUTPUT:
+{output}
+
+─────────────────────────────────────────────────────────────────────────
+
+Answer each section concretely.
+
+## SUFFICIENT
+Is this investigation usable as a working draft? Say YES if it presents specific \
+evidence (for and against the hypothesis), shows quantitative reasoning, and \
+cites at least one relevant precedent or comparable. Say NO only if it's \
+substantially vague, lacks any supporting evidence, or doesn't address the \
+core question.
+Answer: YES or NO
+
+## GAPS
+What specific questions remain unanswered that would materially change a buyer's \
+willingness to pay or a banker's timing advice?
+List 0-5 items (one per line, prefixed with "- ").
+
+## WEAK_CLAIMS
+Which specific claims lack evidence? Quote the claim, state what's needed.
+List 0-3 items (one per line, prefixed with "- ").
+
+## MISSING_CONTEXT
+What precedent transactions, regulatory developments, or market data is missing?
+List 0-3 items (one per line, prefixed with "- ").
+
+## FOLLOW_UP_QUERIES
+Specific web search queries to fill the gaps above.
+List 0-5 items (one per line, prefixed with "- ").
+
+## SUMMARY
+One sentence: what is the single most important gap in this investigation?"""
 
 logger = logging.getLogger(__name__)
 
@@ -201,188 +293,95 @@ class QualityChecker:
             details=f"Agent '{agent_name}': {_format_check_details(checks)}",
         )
 
-    async def check_l1_semantic(
+    async def critique_l1(
         self,
         output: str,
         agent_name: str,
         runner: "ResearchRunner",
-    ) -> QualityReport:
-        """LLM-based quality check using Haiku for speed and cost (~$0.01/check).
+    ) -> Critique:
+        """Opus critique of L1 research output.
 
-        Evaluates research output on 5 dimensions using a fast, cheap model.
-        Falls back to regex check if Haiku call fails.
+        Replaces the old Haiku scoring system. Instead of rating 1-5 on abstract
+        dimensions, Opus identifies specific gaps, weak claims, and follow-up
+        queries. The critique is fed back to the research agent's next round
+        as a directed continuation prompt.
+
+        Cost: ~$0.15-0.30 per call (12K input, ~2K output).
+        Falls back to a default "not sufficient" critique on API failure.
         """
-        prompt = f"""Rate this research agent output 1-5 on each dimension. Be harsh — a 3 means "acceptable for a first-year analyst," a 5 means "a senior banker would cite this in a client meeting."
-
-AGENT: {agent_name}
-OUTPUT (first 3000 chars):
-{output[:3000]}
-
-Rate each dimension (1-5) and give a one-sentence justification:
-
-1. SPECIFICITY: Does it contain specific numbers, dates, company names, and dollar amounts — not generalities?
-2. NOVELTY: Would a sector specialist learn something they didn't already know?
-3. SOURCE_QUALITY: Are claims attributed to specific, verifiable sources (SEC filings, state databases, named publications)?
-4. ACTIONABILITY: Could a deal team use this in a pitch book or diligence checklist?
-5. ANOMALY_VALUE: Did it surface surprising contradictions, gaps, or non-obvious patterns?
-
-Output EXACTLY in this format (one per line):
-SPECIFICITY: [1-5] — [justification]
-NOVELTY: [1-5] — [justification]
-SOURCE_QUALITY: [1-5] — [justification]
-ACTIONABILITY: [1-5] — [justification]
-ANOMALY_VALUE: [1-5] — [justification]
-OVERALL: PASS or FAIL (PASS requires average >= 3.0 and no dimension below 2)"""
+        # Cap at ~12K chars (~3K tokens) — enough to see substance, not just intro
+        truncated = output[:12000]
+        prompt = _L1_CRITIQUE_PROMPT.format(agent_name=agent_name, output=truncated)
 
         try:
             text, costs = await runner.run_synthesis(
                 prompt,
-                task_id=f"quality_check_{agent_name[:20]}",
-                model="claude-haiku-4-5-20251001",
+                task_id=f"critique_l1_{agent_name[:20]}",
+                model=OPUS_MODEL,
             )
-
-            # Parse scores
-            scores = {}
-            dimensions = ["SPECIFICITY", "NOVELTY", "SOURCE_QUALITY", "ACTIONABILITY", "ANOMALY_VALUE"]
-            for dim in dimensions:
-                score_match = re.search(rf"{dim}\s*:\s*(\d)", text)
-                if score_match:
-                    scores[dim] = int(score_match.group(1))
-
-            if not scores:
-                logger.warning(f"Could not parse Haiku quality scores for {agent_name}, falling back to regex")
-                return self.check_l1(output, agent_name)
-
-            # Treat missing dimensions as score 1 (worst) to avoid inflating the average
-            missing_dims = set(dimensions) - set(scores.keys())
-            if missing_dims:
-                logger.warning(f"Haiku output missing dimensions for {agent_name}: {missing_dims}. Treating as 1.")
-                for dim in missing_dims:
-                    scores[dim] = 1
-
-            avg_score = sum(scores.values()) / len(scores)
-            min_score = min(scores.values())
-            passed = avg_score >= 3.0 and min_score >= 2
-
-            # Convert scores to check-style dict for QualityReport
-            checks = {f"{dim.lower()}_gte_2": score >= 2 for dim, score in scores.items()}
-            checks["avg_gte_3"] = avg_score >= 3.0
-
-            overall_match = re.search(r"OVERALL\s*:\s*(PASS|FAIL)", text, re.IGNORECASE)
-            if overall_match:
-                passed = overall_match.group(1).upper() == "PASS"
-
-            pass_rate = sum(checks.values()) / len(checks) if checks else 0
-
-            score_str = ", ".join(f"{d}={s}" for d, s in scores.items())
-            details = f"Agent '{agent_name}': avg={avg_score:.1f}, min={min_score} [{score_str}]"
-
-            report = QualityReport(
-                layer="l1_semantic",
-                checks=checks,
-                pass_rate=pass_rate,
-                passed=passed,
-                details=details,
-            )
-
-            if passed:
-                logger.info(f"  Semantic quality PASSED: {details}")
+            critique = _parse_critique(text, agent_name)
+            if critique.sufficient:
+                logger.info(f"  Opus critique SUFFICIENT: '{agent_name}' — {critique.summary}")
             else:
-                logger.warning(f"  Semantic quality FAILED: {details}")
-
-            return report
+                gap_count = len(critique.gaps)
+                logger.info(
+                    f"  Opus critique NOT SUFFICIENT: '{agent_name}' — "
+                    f"{gap_count} gaps identified — {critique.summary}"
+                )
+            return critique
 
         except Exception as e:
-            logger.warning(f"Haiku quality check failed for {agent_name}: {e}. Falling back to regex.")
-            return self.check_l1(output, agent_name)
+            logger.warning(
+                f"Opus L1 critique failed for {agent_name}: {e}. "
+                f"Returning default not-sufficient critique."
+            )
+            return Critique(
+                agent_name=agent_name,
+                sufficient=False,
+                summary=f"Critique failed: {e}",
+            )
 
-    async def check_l2_semantic(
+    async def critique_l2(
         self,
         output: str,
         agent_name: str,
         runner: "ResearchRunner",
-    ) -> QualityReport:
-        """LLM-based quality check for L2 deep dive outputs."""
-        prompt = f"""Rate this deep research investigation output 1-5 on each dimension. Be harsh.
+    ) -> Critique:
+        """Opus critique of L2 deep dive output.
 
-AGENT: {agent_name}
-OUTPUT (first 3000 chars):
-{output[:3000]}
-
-Rate each dimension (1-5):
-
-1. EVIDENCE_DEPTH: Does it present specific, verifiable evidence (not just claims)?
-2. QUANTITATIVE_RIGOR: Does it show its work on financial calculations with stated assumptions?
-3. PRECEDENT_QUALITY: Does it cite specific, relevant comparable transactions with disclosed metrics?
-4. COUNTER_EVIDENCE: Does it seriously investigate what would disprove the hypothesis?
-5. DEAL_RELEVANCE: Would this change a buyer's willingness to pay or a banker's timing advice?
-
-Output EXACTLY in this format (one per line):
-EVIDENCE_DEPTH: [1-5] — [justification]
-QUANTITATIVE_RIGOR: [1-5] — [justification]
-PRECEDENT_QUALITY: [1-5] — [justification]
-COUNTER_EVIDENCE: [1-5] — [justification]
-DEAL_RELEVANCE: [1-5] — [justification]
-OVERALL: PASS or FAIL (PASS requires average >= 3.0 and no dimension below 2)"""
+        Same pattern as critique_l1 but with investigation-specific prompt.
+        Cost: ~$0.15-0.30 per call.
+        """
+        truncated = output[:12000]
+        prompt = _L2_CRITIQUE_PROMPT.format(agent_name=agent_name, output=truncated)
 
         try:
             text, costs = await runner.run_synthesis(
                 prompt,
-                task_id=f"quality_check_l2_{agent_name[:20]}",
-                model="claude-haiku-4-5-20251001",
+                task_id=f"critique_l2_{agent_name[:20]}",
+                model=OPUS_MODEL,
             )
-
-            scores = {}
-            dimensions = ["EVIDENCE_DEPTH", "QUANTITATIVE_RIGOR", "PRECEDENT_QUALITY", "COUNTER_EVIDENCE", "DEAL_RELEVANCE"]
-            for dim in dimensions:
-                score_match = re.search(rf"{dim}\s*:\s*(\d)", text)
-                if score_match:
-                    scores[dim] = int(score_match.group(1))
-
-            if not scores:
-                logger.warning(f"Could not parse Haiku L2 quality scores for {agent_name}, falling back to regex")
-                return self.check_l2(output, agent_name)
-
-            # Treat missing dimensions as score 1 (worst) to avoid inflating the average
-            missing_dims = set(dimensions) - set(scores.keys())
-            if missing_dims:
-                logger.warning(f"Haiku L2 output missing dimensions for {agent_name}: {missing_dims}. Treating as 1.")
-                for dim in missing_dims:
-                    scores[dim] = 1
-
-            avg_score = sum(scores.values()) / len(scores)
-            min_score = min(scores.values())
-            passed = avg_score >= 3.0 and min_score >= 2
-
-            checks = {f"{dim.lower()}_gte_2": score >= 2 for dim, score in scores.items()}
-            checks["avg_gte_3"] = avg_score >= 3.0
-
-            overall_match = re.search(r"OVERALL\s*:\s*(PASS|FAIL)", text, re.IGNORECASE)
-            if overall_match:
-                passed = overall_match.group(1).upper() == "PASS"
-
-            pass_rate = sum(checks.values()) / len(checks) if checks else 0
-            score_str = ", ".join(f"{d}={s}" for d, s in scores.items())
-            details = f"Agent '{agent_name}': avg={avg_score:.1f}, min={min_score} [{score_str}]"
-
-            report = QualityReport(
-                layer="l2_semantic",
-                checks=checks,
-                pass_rate=pass_rate,
-                passed=passed,
-                details=details,
-            )
-
-            if passed:
-                logger.info(f"  L2 semantic quality PASSED: {details}")
+            critique = _parse_critique(text, agent_name)
+            if critique.sufficient:
+                logger.info(f"  Opus L2 critique SUFFICIENT: '{agent_name}' — {critique.summary}")
             else:
-                logger.warning(f"  L2 semantic quality FAILED: {details}")
-
-            return report
+                gap_count = len(critique.gaps)
+                logger.info(
+                    f"  Opus L2 critique NOT SUFFICIENT: '{agent_name}' — "
+                    f"{gap_count} gaps — {critique.summary}"
+                )
+            return critique
 
         except Exception as e:
-            logger.warning(f"Haiku L2 quality check failed for {agent_name}: {e}. Falling back to regex.")
-            return self.check_l2(output, agent_name)
+            logger.warning(
+                f"Opus L2 critique failed for {agent_name}: {e}. "
+                f"Returning default not-sufficient critique."
+            )
+            return Critique(
+                agent_name=agent_name,
+                sufficient=False,
+                summary=f"Critique failed: {e}",
+            )
 
     def check_l3(self, output: str, pipeline_mode: str = "strategic_briefing") -> QualityReport:
         """Verify final synthesis output."""
@@ -440,3 +439,109 @@ def _format_check_details(checks: dict[str, bool]) -> str:
     if not failed:
         return "All checks passed"
     return f"Failed: {', '.join(failed)}"
+
+
+def _parse_critique(text: str, agent_name: str) -> Critique:
+    """Parse Opus critique response into a Critique object.
+
+    Extracts structured sections from the freeform Opus output.
+    Designed to be robust to minor formatting variations.
+    """
+    # Parse SUFFICIENT
+    sufficient_match = re.search(
+        r"##\s*SUFFICIENT.*?Answer:\s*(YES|NO)", text, re.DOTALL | re.IGNORECASE
+    )
+    if not sufficient_match:
+        # Fallback: look for YES/NO right after the section header
+        sufficient_match = re.search(
+            r"SUFFICIENT.*?\b(YES|NO)\b", text, re.IGNORECASE
+        )
+    sufficient = sufficient_match.group(1).upper() == "YES" if sufficient_match else False
+
+    # Parse bullet lists from each section
+    gaps = _extract_bullets(text, "GAPS")
+    weak_claims = _extract_bullets(text, "WEAK_CLAIMS")
+    missing_context = _extract_bullets(text, "MISSING_CONTEXT")
+    follow_up_queries = _extract_bullets(text, "FOLLOW_UP_QUERIES")
+
+    # Parse SUMMARY
+    summary_match = re.search(
+        r"##\s*SUMMARY\s*\n+(.*?)(?:\n##|\Z)", text, re.DOTALL
+    )
+    summary = summary_match.group(1).strip() if summary_match else ""
+    # Take just the first line/sentence of the summary
+    summary = summary.split("\n")[0].strip()
+
+    return Critique(
+        agent_name=agent_name,
+        sufficient=sufficient,
+        gaps=gaps,
+        weak_claims=weak_claims,
+        missing_context=missing_context,
+        follow_up_queries=follow_up_queries,
+        summary=summary,
+    )
+
+
+def _extract_bullets(text: str, section_name: str) -> list[str]:
+    """Extract bullet-point items from a named section in Opus output."""
+    # Match from "## SECTION_NAME" to the next "##" or end of text
+    pattern = rf"##\s*{section_name}\s*\n+(.*?)(?:\n##|\Z)"
+    section_match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
+    if not section_match:
+        return []
+
+    section_text = section_match.group(1)
+    # Extract lines starting with "- " (standard bullet format)
+    items = []
+    for line in section_text.split("\n"):
+        line = line.strip()
+        if line.startswith("- "):
+            items.append(line[2:].strip())
+        elif line.startswith("* "):
+            items.append(line[2:].strip())
+    return items
+
+
+def format_critique_as_continuation(critique: Critique) -> str:
+    """Format an Opus critique as a continuation prompt for the research agent.
+
+    This replaces the generic "identify 2-3 most critical unanswered questions"
+    continuation prompt with directed feedback from the Opus critic.
+    """
+    parts = [
+        "A senior reviewer has identified specific gaps in your research so far. "
+        "Focus your next round on addressing these gaps. Do NOT repeat research "
+        "you've already done — build on your existing findings.\n"
+    ]
+
+    if critique.gaps:
+        parts.append("GAPS TO ADDRESS:")
+        for gap in critique.gaps:
+            parts.append(f"- {gap}")
+        parts.append("")
+
+    if critique.weak_claims:
+        parts.append("CLAIMS NEEDING EVIDENCE:")
+        for claim in critique.weak_claims:
+            parts.append(f"- {claim}")
+        parts.append("")
+
+    if critique.missing_context:
+        parts.append("MISSING CONTEXT:")
+        for ctx in critique.missing_context:
+            parts.append(f"- {ctx}")
+        parts.append("")
+
+    if critique.follow_up_queries:
+        parts.append("SUGGESTED SEARCHES (use these as starting points):")
+        for query in critique.follow_up_queries:
+            parts.append(f"- {query}")
+        parts.append("")
+
+    parts.append(
+        "Search for the items above, then produce your complete, consolidated "
+        "output incorporating everything you've found across all rounds."
+    )
+
+    return "\n".join(parts)

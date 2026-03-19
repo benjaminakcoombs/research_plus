@@ -1518,5 +1518,35 @@
     "search_count": 0,
     "estimated_cost_usd": 1.0539,
     "timestamp": "2026-03-18T23:51:24.900476"
+  },
+  {
+    "task_id": "l3a_write",
+    "model": "claude-opus-4-6",
+    "input_tokens": 142688,
+    "output_tokens": 37177,
+    "thinking_tokens": 0,
+    "search_count": 0,
+    "estimated_cost_usd": 1.6429,
+    "timestamp": "2026-03-19T00:05:47.940920"
+  },
+  {
+    "task_id": "l3b_refinement",
+    "model": "claude-opus-4-6",
+    "input_tokens": 140376,
+    "output_tokens": 21099,
+    "thinking_tokens": 0,
+    "search_count": 0,
+    "estimated_cost_usd": 1.2294,
+    "timestamp": "2026-03-19T00:14:17.290315"
+  },
+  {
+    "task_id": "l3c_coherency_audit",
+    "model": "claude-opus-4-6",
+    "input_tokens": 140726,
+    "output_tokens": 46603,
+    "thinking_tokens": 0,
+    "search_count": 0,
+    "estimated_cost_usd": 1.8687,
+    "timestamp": "2026-03-19T00:31:42.514543"
   }
 ]

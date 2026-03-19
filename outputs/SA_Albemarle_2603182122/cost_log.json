@@ -668,5 +668,105 @@
     "search_count": 4,
     "estimated_cost_usd": 0.8774,
     "timestamp": "2026-03-18T23:46:50.174443"
+  },
+  {
+    "task_id": "l15_consolidation",
+    "model": "claude-opus-4-6",
+    "input_tokens": 121173,
+    "output_tokens": 19009,
+    "thinking_tokens": 0,
+    "search_count": 0,
+    "estimated_cost_usd": 1.0811,
+    "timestamp": "2026-03-19T00:21:22.060989"
+  },
+  {
+    "task_id": "gap_fill_generation",
+    "model": "claude-opus-4-6",
+    "input_tokens": 1073,
+    "output_tokens": 3163,
+    "thinking_tokens": 0,
+    "search_count": 0,
+    "estimated_cost_usd": 0.0844,
+    "timestamp": "2026-03-19T00:26:42.626530"
+  },
+  {
+    "task_id": "l1_gap_01_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 314596,
+    "output_tokens": 9458,
+    "thinking_tokens": 0,
+    "search_count": 12,
+    "estimated_cost_usd": 1.2057,
+    "timestamp": "2026-03-19T00:30:19.915069"
+  },
+  {
+    "task_id": "l1_gap_01_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 187610,
+    "output_tokens": 11088,
+    "thinking_tokens": 0,
+    "search_count": 10,
+    "estimated_cost_usd": 0.8291,
+    "timestamp": "2026-03-19T00:35:29.265150"
+  },
+  {
+    "task_id": "l1_gap_01_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 193919,
+    "output_tokens": 12246,
+    "thinking_tokens": 0,
+    "search_count": 6,
+    "estimated_cost_usd": 0.8254,
+    "timestamp": "2026-03-19T00:40:02.963773"
+  },
+  {
+    "task_id": "l1_gap_02_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 474331,
+    "output_tokens": 10242,
+    "thinking_tokens": 0,
+    "search_count": 14,
+    "estimated_cost_usd": 1.7166,
+    "timestamp": "2026-03-19T00:30:51.722509"
+  },
+  {
+    "task_id": "l1_gap_02_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 288370,
+    "output_tokens": 12002,
+    "thinking_tokens": 0,
+    "search_count": 10,
+    "estimated_cost_usd": 1.1451,
+    "timestamp": "2026-03-19T00:36:17.142518"
+  },
+  {
+    "task_id": "l1_gap_02_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 237678,
+    "output_tokens": 14935,
+    "thinking_tokens": 0,
+    "search_count": 7,
+    "estimated_cost_usd": 1.0071,
+    "timestamp": "2026-03-19T00:42:05.814240"
+  },
+  {
+    "task_id": "l15_consolidation_v2",
+    "model": "claude-opus-4-6",
+    "input_tokens": 144925,
+    "output_tokens": 17962,
+    "thinking_tokens": 0,
+    "search_count": 0,
+    "estimated_cost_usd": 1.1737,
+    "timestamp": "2026-03-19T00:49:33.708442"
+  },
+  {
+    "task_id": "l2_generation",
+    "model": "claude-opus-4-6",
+    "input_tokens": 8088,
+    "output_tokens": 17778,
+    "thinking_tokens": 0,
+    "search_count": 0,
+    "estimated_cost_usd": 0.4849,
+    "timestamp": "2026-03-19T01:01:12.274412"
   }
 ]

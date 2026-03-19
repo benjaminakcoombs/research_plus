@@ -132,6 +132,21 @@ class QualityReport(BaseModel):
     details: str = ""
 
 
+class Critique(BaseModel):
+    """Opus critique of a research agent's output.
+
+    Replaces the old Haiku-based scoring system with actionable feedback
+    that directs follow-up research rounds.
+    """
+    agent_name: str
+    sufficient: bool = False  # Is the output usable as a working first draft?
+    gaps: list[str] = Field(default_factory=list)  # Specific unanswered questions
+    weak_claims: list[str] = Field(default_factory=list)  # Claims without evidence (quoted)
+    missing_context: list[str] = Field(default_factory=list)  # Absent market/competitive/regulatory context
+    follow_up_queries: list[str] = Field(default_factory=list)  # Literal search queries to fill gaps
+    summary: str = ""  # One-line summary of the critique
+
+
 class ResearchRun(BaseModel):
     """Top-level container for an entire research project."""
     id: str

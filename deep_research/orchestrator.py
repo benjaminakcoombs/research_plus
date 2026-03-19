@@ -20,12 +20,13 @@ from .models import (
     LAYER_DISPLAY_NAMES,
     AgentOutput,
     CompanyArchetype,
+    Critique,
     QualityReport,
     ResearchRun,
     TensionPoint,
 )
 from .prompt_builder import PromptBuilder
-from .quality_checker import QualityChecker
+from .quality_checker import QualityChecker, format_critique_as_continuation
 from .research_runner import BudgetExceededError, ResearchRunner
 
 logger = logging.getLogger(__name__)
@@ -165,6 +166,7 @@ class DeepResearchOrchestrator:
 
     async def _run_single_research(
         self, runner, prompt: str, name: str, task_id: str, agent_type: str,
+        round_callback=None,
     ) -> tuple[AgentOutput, list]:
         """Run a single research agent task. Returns (output, costs)."""
         logger.info(f"  [{task_id}] Starting: {name}")
@@ -172,7 +174,9 @@ class DeepResearchOrchestrator:
         agent_costs = []
 
         try:
-            text, agent_costs = await runner.run_research(prompt=prompt, task_id=task_id)
+            text, agent_costs = await runner.run_research(
+                prompt=prompt, task_id=task_id, round_callback=round_callback,
+            )
             elapsed = time.time() - start
             total_cost = sum(c.estimated_cost_usd for c in agent_costs)
             search_count = sum(c.search_count for c in agent_costs)
@@ -209,23 +213,28 @@ class DeepResearchOrchestrator:
         self, run: ResearchRun, prompts: list[str], names: list[str],
         agent_type: str,
     ) -> list[tuple[AgentOutput, list]]:
-        """Run research agents in parallel batches, respecting concurrency limit.
+        """Run research agents in parallel with Opus critique-directed research.
 
-        Includes quality-based retry: if an agent's output fails its quality check,
-        the agent is re-run up to max_retries times. This ensures each agent produces
-        output that meets minimum quality thresholds before proceeding.
+        Architecture (replaces the old blind quality-retry loop):
+        1. Agent runs round 1 of research (web search + analysis)
+        2. Fast regex pre-check catches catastrophic failures (too short, no numbers, etc.)
+        3. Opus critique reviews round 1 output — identifies specific gaps and weak claims
+        4. If SUFFICIENT: agent stops early (saves cost on rounds 2-3)
+        5. If NOT SUFFICIENT: critique becomes the round 2 continuation prompt
+           (directed gap-filling instead of the generic "identify unanswered questions")
+        6. Round 3 uses the default continuation prompt for final consolidation
+
+        No outer retry loop. The critique is built into the research process itself.
+        Error retries (connection failures) are still handled separately.
 
         Saves each agent's output to disk as it completes (incremental save).
         """
         runner = self._ensure_runner()
         semaphore = asyncio.Semaphore(self.config.max_concurrent_tasks)
         save_lock = asyncio.Lock()
-        max_quality_retries = self.config.max_retries  # From config (default: 2)
 
         # Resume support: build the set of indices we already have GOOD outputs for.
         # Errored outputs ("[ERROR...") are excluded — those agents will be re-run.
-        # Strategy: strip errored entries from the list, then run starting from len(good).
-        # This handles mixed success/error states without creating duplicates.
         output_list_ref = run.l1_outputs if agent_type == "l1" else run.l2_outputs
         good_outputs = [o for o in output_list_ref if not o.raw_output.startswith("[ERROR")]
         errored_count = len(output_list_ref) - len(good_outputs)
@@ -251,113 +260,100 @@ class DeepResearchOrchestrator:
         # Collect results in order — pre-allocate slots
         results: list[tuple[AgentOutput, list] | None] = [None] * len(remaining_prompts)
 
-        # Error retries are separate from quality retries — connection failures
-        # need a cooldown before retry, not an immediate re-run.
+        # Error retries for connection/API failures (separate from critique flow)
         max_error_retries = 2
-        error_cooldown_seconds = 60  # Wait before retrying a crashed agent
+        error_cooldown_seconds = 60
 
         async def run_and_save(slot_idx, i, prompt, name):
             task_id = f"{agent_type}_agent_{i + 1:02d}"
-            best_output = None
-            best_costs = []
-            best_qr = None
-            all_attempt_costs = []  # Track ALL costs across retries (bug 3a fix)
-            error_retries_used = 0
 
-            for attempt in range(max_quality_retries + 1 + max_error_retries):
+            # ── Build the critique callback ──────────────────────────────
+            # This runs between research rounds inside run_research().
+            # After round 1: Opus critique → directed continuation or early stop.
+            # After round 2+: default continuation (None → use generic prompt).
+            critique_result: Critique | None = None
+
+            async def critique_callback(round_num: int, round_text: str) -> str | None:
+                nonlocal critique_result
+
+                if round_num != 0:
+                    return None  # Only critique after round 1
+
+                # Fast regex pre-check — catch catastrophic failures before
+                # spending ~$0.20 on an Opus critique call
+                if agent_type == "l1":
+                    regex_qr = self.quality_checker.check_l1(round_text, name)
+                else:
+                    regex_qr = self.quality_checker.check_l2(round_text, name)
+
+                if not regex_qr.passed:
+                    logger.warning(
+                        f"  [{task_id}] Regex pre-check failed: {regex_qr.details}. "
+                        f"Skipping Opus critique, using default continuation."
+                    )
+                    return None  # Use default gap-identification prompt
+
+                # Opus critique
+                if agent_type == "l1":
+                    critique_result = await self.quality_checker.critique_l1(
+                        round_text, name, runner,
+                    )
+                else:
+                    critique_result = await self.quality_checker.critique_l2(
+                        round_text, name, runner,
+                    )
+
+                if critique_result.sufficient:
+                    return "__STOP__"  # Output good enough — skip remaining rounds
+
+                return format_critique_as_continuation(critique_result)
+
+            # ── Run the agent with critique-directed research ────────────
+            for error_attempt in range(max_error_retries + 1):
                 async with semaphore:
                     output, agent_costs = await self._run_single_research(
                         runner, prompt, name, task_id, agent_type,
+                        round_callback=critique_callback,
                     )
 
-                all_attempt_costs.extend(agent_costs)  # Accumulate all attempt costs
-
-                # Distinguish errors from low quality — different retry strategies
                 is_error = output.raw_output.startswith("[ERROR")
+                if is_error and error_attempt < max_error_retries:
+                    logger.warning(
+                        f"  [{task_id}] Agent errored: {output.raw_output[:100]}. "
+                        f"Waiting {error_cooldown_seconds}s before retry "
+                        f"({error_attempt + 1}/{max_error_retries})..."
+                    )
+                    await asyncio.sleep(error_cooldown_seconds)
+                    critique_result = None  # Reset for retry
+                    continue
+                elif is_error:
+                    logger.error(
+                        f"  [{task_id}] Agent errored after {max_error_retries} retries. "
+                        f"Giving up."
+                    )
+                break
 
-                if is_error:
-                    if error_retries_used < max_error_retries:
-                        error_retries_used += 1
-                        logger.warning(
-                            f"  [{task_id}] Agent errored: {output.raw_output[:100]}. "
-                            f"Waiting {error_cooldown_seconds}s before retry "
-                            f"({error_retries_used}/{max_error_retries})..."
-                        )
-                        await asyncio.sleep(error_cooldown_seconds)
-                        continue
-                    else:
-                        logger.error(
-                            f"  [{task_id}] Agent errored after {max_error_retries} retries. "
-                            f"Giving up."
-                        )
-                        # Still save the error output as best if nothing else worked
-                        if best_output is None:
-                            best_output = output
-                            best_costs = agent_costs
-                            best_qr = QualityReport(
-                                layer=agent_type, passed=False, pass_rate=0.0,
-                                details=f"Agent errored: {output.raw_output[:200]}",
-                            )
-                        break
+            results[slot_idx] = (output, agent_costs)
 
-                # Quality check (only for non-errored outputs)
+            # Build a QualityReport from the regex check for the quality_reports log
+            if not output.raw_output.startswith("[ERROR"):
                 if agent_type == "l1":
                     qr = self.quality_checker.check_l1(output.raw_output, output.agent_name)
                 else:
                     qr = self.quality_checker.check_l2(output.raw_output, output.agent_name)
+            else:
+                qr = QualityReport(
+                    layer=agent_type, passed=False, pass_rate=0.0,
+                    details=f"Agent errored: {output.raw_output[:200]}",
+                )
 
-                # Semantic quality check (Haiku-powered, ~$0.01 per check)
-                if agent_type == "l1":
-                    semantic_qr = await self.quality_checker.check_l1_semantic(
-                        output.raw_output, agent_name=output.agent_name, runner=runner,
-                    )
-                elif agent_type == "l2":
-                    semantic_qr = await self.quality_checker.check_l2_semantic(
-                        output.raw_output, agent_name=output.agent_name, runner=runner,
-                    )
-                else:
-                    semantic_qr = None
-
-                if semantic_qr:
-                    run.quality_reports.append(semantic_qr)
-                    # Semantic check is authoritative — it understands content quality,
-                    # not just keyword presence. If Haiku says it's good, trust it even
-                    # if regex disagrees. If Haiku says it's bad, override regex pass.
-                    qr = semantic_qr
-
-                # Keep the best result (highest pass rate)
-                if best_qr is None or qr.pass_rate > best_qr.pass_rate:
-                    best_output = output
-                    best_costs = agent_costs
-                    best_qr = qr
-
-                if qr.passed:
-                    break
-
-                # Count quality retries separately from error retries
-                quality_attempts = attempt - error_retries_used
-                if quality_attempts < max_quality_retries:
-                    logger.warning(
-                        f"  [{task_id}] Quality check failed ({qr.pass_rate:.0%}): {qr.details}. "
-                        f"Retrying ({quality_attempts + 1}/{max_quality_retries})..."
-                    )
-                else:
-                    logger.warning(
-                        f"  [{task_id}] Quality check failed after {max_quality_retries + 1} attempts "
-                        f"({best_qr.pass_rate:.0%}). Using best result."
-                    )
-                    break
-
-            results[slot_idx] = (best_output, all_attempt_costs)
-
-            # Save incrementally under lock — record ALL attempt costs so cost_records
-            # sums correctly to total_cost_usd (which includes retry costs via runner.total_cost).
+            # Save incrementally under lock
             async with save_lock:
-                run.quality_reports.append(best_qr)
+                run.quality_reports.append(qr)
 
                 output_list = run.l1_outputs if agent_type == "l1" else run.l2_outputs
-                output_list.append(best_output)
-                run.cost_records.extend(all_attempt_costs)
+                output_list.append(output)
+                run.cost_records.extend(agent_costs)
                 run.total_cost_usd = runner.total_cost
                 run.save(self.config.output_dir)
                 done = len(output_list)
@@ -451,13 +447,30 @@ class DeepResearchOrchestrator:
 
                     async def run_gap_agent(i: int, prompt: str):
                         task_id = f"l1_gap_{i + 1:02d}"
+                        gap_name = f"Gap Fill: {gaps[i][:60]}"
                         logger.info(f"  [{task_id}] Running gap-fill agent {i + 1}/{len(gap_prompts)}")
                         start = time.time()
                         agent_gap_costs: list = []
+
+                        # Opus critique callback for gap-fill agents (same pattern as L1)
+                        async def gap_critique_callback(round_num: int, round_text: str) -> str | None:
+                            if round_num != 0:
+                                return None
+                            regex_qr = self.quality_checker.check_l1(round_text, gap_name)
+                            if not regex_qr.passed:
+                                return None
+                            critique = await self.quality_checker.critique_l1(
+                                round_text, gap_name, runner,
+                            )
+                            if critique.sufficient:
+                                return "__STOP__"
+                            return format_critique_as_continuation(critique)
+
                         try:
                             async with semaphore:
                                 gap_text, agent_gap_costs = await runner.run_research(
-                                    prompt=prompt, task_id=task_id
+                                    prompt=prompt, task_id=task_id,
+                                    round_callback=gap_critique_callback,
                                 )
                             elapsed = time.time() - start
                             total_cost = sum(c.estimated_cost_usd for c in agent_gap_costs)

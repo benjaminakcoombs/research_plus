@@ -69,8 +69,8 @@ def clean_markdown(text):
     text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', text)
     # Italic: *text* -> <i>text</i>
     text = re.sub(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)', r'<i>\1</i>', text)
-    # Footnote refs: ^N -> <super>N</super>
-    text = re.sub(r'\^(\d+)', r'<super>\1</super>', text)
+    # Footnote refs: ^N or ^i, ^ii, ^iii, ^iv, ^v, ^vi, ^vii, ^viii, ^ix, ^x -> <super>N</super>
+    text = re.sub(r'\^(\w+)', r'<super>\1</super>', text)
     # Clean up any remaining markdown artifacts
     text = text.replace('##', '').replace('#', '')
     # Replace Unicode subscript/superscript characters with ReportLab tags
@@ -184,10 +184,26 @@ def build_pdf(md_path, output_path):
             i += 1
             continue
 
-        # Section headers: ## I. THE OPPORTUNITY
+        # Section headers: ## I. THE OPPORTUNITY or ## V. About
         if re.match(r'^##\s+[IVX]+\.', stripped):
             title = re.sub(r'^##\s+', '', stripped)
             story.append(Paragraph(clean_markdown(title), styles['SectionHead']))
+            i += 1
+            continue
+
+        # Calculation Notes section header
+        if stripped in ('### Calculation Notes', '## Calculation Notes', 'Calculation Notes') and i > 20:
+            story.append(Spacer(1, 12))
+            story.append(HRFlowable(width="100%", thickness=0.5, color=HexColor('#dddddd')))
+            story.append(Spacer(1, 6))
+            story.append(Paragraph("Calculation Notes", styles['SectionHead']))
+            i += 1
+            continue
+
+        # Finding titles: ### lines in the Key Findings section (not Calculation/Source Notes)
+        if stripped.startswith('### ') and not stripped.startswith('### Calc') and not stripped.startswith('### Source') and not stripped.startswith('### Coherency'):
+            title_text = stripped[4:].strip()
+            story.append(Paragraph(clean_markdown(title_text), styles['FindingTitle']))
             i += 1
             continue
 
@@ -238,14 +254,34 @@ def build_pdf(md_path, output_path):
             continue
 
         # Source notes section
-        if stripped.startswith('## Source Notes') or stripped == 'Source Notes':
+        if stripped.startswith('## Source Notes') or stripped.startswith('### Source Notes') or stripped == 'Source Notes':
             story.append(PageBreak())
             story.append(Paragraph("Source Notes", styles['SectionHead']))
             i += 1
             continue
 
-        # Footnotes: ^N text
-        if re.match(r'^\^(\d+)\s', stripped):
+        # Bullet points (Open Questions, etc.)
+        if stripped.startswith('- '):
+            bullet_text = stripped[2:]
+            story.append(Paragraph(clean_markdown(bullet_text), ParagraphStyle(
+                'Bullet', parent=styles['BodyText'],
+                fontSize=10, leading=14, spaceAfter=4,
+                leftIndent=24, bulletIndent=12,
+                bulletFontName='Helvetica', bulletFontSize=10,
+            ), bulletText='\u2022'))
+            i += 1
+            continue
+
+        # Bold sub-headers within findings (e.g., "**Open Questions:**", "**The Observation.**")
+        if re.match(r'^\*\*[A-Za-z].*[:.]?\*\*$', stripped) or stripped in ('**Open Questions:**',):
+            text = stripped.strip('*').strip()
+            story.append(Spacer(1, 4))
+            story.append(Paragraph(f'<b>{clean_markdown(text)}</b>', styles['BodyText']))
+            i += 1
+            continue
+
+        # Footnotes: ^N text (Arabic or Roman numeral)
+        if re.match(r'^\^(\w+)\s', stripped):
             story.append(Paragraph(clean_markdown(stripped), styles['Footnote']))
             i += 1
             continue
@@ -269,7 +305,7 @@ def build_pdf(md_path, output_path):
         i += 1
         while i < len(lines):
             next_line = lines[i].strip()
-            if not next_line or next_line.startswith('#') or next_line.startswith('|') or next_line == '---' or next_line.startswith('^'):
+            if not next_line or next_line.startswith('#') or next_line.startswith('|') or next_line == '---' or next_line.startswith('^') or next_line.startswith('- ') or re.match(r'^\*\*[A-Za-z].*[:.]?\*\*$', next_line) or next_line == '**Open Questions:**':
                 break
             para_lines.append(next_line)
             i += 1
