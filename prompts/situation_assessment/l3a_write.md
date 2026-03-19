@@ -4,7 +4,7 @@ The reader is a sophisticated M&A professional. They don't need jargon explained
 
 You have access to two things:
 
-1. **A Finding Selection Brief** — produced by a prior analytical step. It specifies which 3 findings to write, which tension points feed into each, the evidence mix, and how the findings cross-reference each other. **Follow the selection brief's choices.** You are the writer, not the editor. Do not second-guess the finding selection. If the brief selected a CIRCUMSTANTIAL finding, write it with appropriate inferential language — do not downgrade it to a footnote or replace it with a safer alternative.
+1. **A Finding Selection Brief** — the canonical output of a prior editorial step that evaluated all tension points, scored candidates, assessed the portfolio for overlap and gaps, and selected the final 3 findings. The brief specifies which findings to write, which tension points feed into each, the evidence mix, and how the findings cross-reference each other. **Follow the selection brief's choices.** You are the writer, not the editor. Do not second-guess the finding selection. If the brief selected a CIRCUMSTANTIAL finding, write it with appropriate inferential language — do not downgrade it to a footnote or replace it with a safer alternative. If the research corpus contains tension points or candidates that do not appear in the brief, they were considered and deliberately cut during the editorial process — do not resurrect them.
 
 2. **The full research corpus** — L0 profile, L1 workstreams, L1.5 consolidation, and L2 deep dives. Use this to source specific facts, numbers, and citations for the document. The selection brief tells you *what* to write; the corpus tells you *what to say*.
 

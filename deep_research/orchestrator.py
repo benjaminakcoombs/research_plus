@@ -677,7 +677,18 @@ class DeepResearchOrchestrator:
         run.cost_records.extend(costs)
         run.total_cost_usd = runner.total_cost
 
+        # Store full workbook (for audit/debugging)
         run.l3a_select_output = text
+
+        # Extract writer brief (after delimiter) for downstream consumption
+        delimiter = "===WRITER_BRIEF==="
+        if delimiter in text:
+            run.l3a_select_brief = text.split(delimiter, 1)[1].strip()
+            logger.info("[L3a-Select] Writer brief extracted from workbook")
+        else:
+            # Backward compatibility: if no delimiter, pass full output
+            run.l3a_select_brief = text
+            logger.warning("[L3a-Select] No ===WRITER_BRIEF=== delimiter found — passing full output to writer")
 
         logger.info("[L3a-Select] Finding selection brief complete")
 
@@ -694,10 +705,13 @@ class DeepResearchOrchestrator:
 
         logger.info("[L3a-Write] Producing synthesis draft from selection brief...")
 
+        # Pass only the writer brief (not the full workbook) to the write step
+        writer_brief = run.l3a_select_brief or run.l3a_select_output
+
         prompt = self.prompt_builder.build_l3a_write(
             company_name=run.company_name,
             run=run,
-            l3a_select_output=run.l3a_select_output,
+            l3a_select_output=writer_brief,
         )
 
         token_count = count_tokens(prompt)

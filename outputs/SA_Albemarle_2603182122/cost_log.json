@@ -768,5 +768,95 @@
     "search_count": 0,
     "estimated_cost_usd": 0.4849,
     "timestamp": "2026-03-19T01:01:12.274412"
+  },
+  {
+    "task_id": "l2_agent_01_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 198455,
+    "output_tokens": 13890,
+    "thinking_tokens": 0,
+    "search_count": 8,
+    "estimated_cost_usd": 0.8837,
+    "timestamp": "2026-03-19T01:06:25.711919"
+  },
+  {
+    "task_id": "l2_agent_01_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 193974,
+    "output_tokens": 13138,
+    "thinking_tokens": 0,
+    "search_count": 8,
+    "estimated_cost_usd": 0.859,
+    "timestamp": "2026-03-19T01:12:19.277314"
+  },
+  {
+    "task_id": "l2_agent_01_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 92647,
+    "output_tokens": 16156,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.5503,
+    "timestamp": "2026-03-19T01:18:38.119746"
+  },
+  {
+    "task_id": "l2_agent_03_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 361452,
+    "output_tokens": 14064,
+    "thinking_tokens": 0,
+    "search_count": 11,
+    "estimated_cost_usd": 1.4053,
+    "timestamp": "2026-03-19T01:06:45.145774"
+  },
+  {
+    "task_id": "l2_agent_03_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 277802,
+    "output_tokens": 12906,
+    "thinking_tokens": 0,
+    "search_count": 8,
+    "estimated_cost_usd": 1.107,
+    "timestamp": "2026-03-19T01:12:46.671669"
+  },
+  {
+    "task_id": "l2_agent_03_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 76108,
+    "output_tokens": 16403,
+    "thinking_tokens": 0,
+    "search_count": 2,
+    "estimated_cost_usd": 0.4944,
+    "timestamp": "2026-03-19T01:18:57.686850"
+  },
+  {
+    "task_id": "l2_agent_04_r1",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 191258,
+    "output_tokens": 15481,
+    "thinking_tokens": 0,
+    "search_count": 9,
+    "estimated_cost_usd": 0.896,
+    "timestamp": "2026-03-19T01:07:00.714900"
+  },
+  {
+    "task_id": "l2_agent_04_r2",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 209736,
+    "output_tokens": 18732,
+    "thinking_tokens": 0,
+    "search_count": 10,
+    "estimated_cost_usd": 1.0102,
+    "timestamp": "2026-03-19T01:14:50.174422"
+  },
+  {
+    "task_id": "l2_agent_04_r3",
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 106456,
+    "output_tokens": 15520,
+    "thinking_tokens": 0,
+    "search_count": 3,
+    "estimated_cost_usd": 0.5822,
+    "timestamp": "2026-03-19T01:20:30.733664"
   }
 ]

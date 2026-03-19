@@ -190,7 +190,8 @@ class ResearchRun(BaseModel):
     l2_outputs: list[AgentOutput] = Field(default_factory=list)
 
     # L3a (split into selection + writing)
-    l3a_select_output: str | None = None  # Finding selection brief
+    l3a_select_output: str | None = None  # Full selection workbook (Steps 1-4, for audit/debugging)
+    l3a_select_brief: str | None = None  # Writer brief only (after ===WRITER_BRIEF=== delimiter)
     l3a_draft: str | None = None  # Written synthesis draft (output of l3a_write)
     # L3b (editorial refinement)
     l3b_final: str | None = None
